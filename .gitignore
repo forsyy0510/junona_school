@@ -17,6 +17,7 @@ instance/
 
 # Uploads (user-generated content)
 uploads/
+static/uploads/
 
 
 # OS/editor junk

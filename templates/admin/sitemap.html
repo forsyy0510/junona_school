@@ -33,6 +33,9 @@
     <div style="margin-top: 32px; background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <h2 style="margin: 0 0 16px; font-size: 1.25rem;">Резервное копирование</h2>
         <p style="color: #6b7280; margin-bottom: 16px;">Копия папок <strong>instance</strong> (база данных) и <strong>загрузки</strong> (static/uploads). Один архив ZIP для выгрузки и восстановления.</p>
+        <p style="font-size: 0.875rem; color: #b45309; background: #fffbeb; padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #fcd34d;">
+            <strong>Важно:</strong> На облачном хостинге (Render, Heroku и т.п.) диск временный — после <strong>перезапуска или нового деплоя</strong> восстановленные из ZIP файлы пропадут. Восстановление из копии имеет смысл на своём сервере (VPS) или локально.
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end;">
             <div>
                 <button type="button" id="backup-export-preview-btn" class="btn" style="background: #e5e7eb; color: #374151;">
@@ -330,7 +333,8 @@
     function renderZipPreview(instanceCount, uploadsCount, uploadsSize) {
         var html = '<div class="backup-preview-title">Содержимое архива</div>';
         html += '<div class="backup-table-block"><h4>instance</h4><p style="margin: 0;">' + (instanceCount || 0) + ' файлов</p></div>';
-        html += '<div class="backup-table-block"><h4>uploads</h4><p style="margin: 0;">' + (uploadsCount || 0) + ' файлов, объём ' + formatBytes(uploadsSize || 0) + '</p></div>';
+        var sizeText = (uploadsSize && uploadsSize > 0) ? formatBytes(uploadsSize) : ' (в метаданных архива размер не указан)';
+        html += '<div class="backup-table-block"><h4>uploads</h4><p style="margin: 0;">' + (uploadsCount || 0) + ' файлов, объём ' + sizeText + '</p></div>';
         return html;
     }
 
@@ -393,7 +397,8 @@
                     var uploadNames = names.filter(function(n) { return n.indexOf('uploads/') === 0 && !n.endsWith('/'); });
                     var uploadsSize = uploadNames.reduce(function(sum, n) {
                         var e = zip.files[n];
-                        return sum + (e && e.uncompressedSize ? e.uncompressedSize : 0);
+                        var sz = e && (e.uncompressedSize != null) ? e.uncompressedSize : (e && e._data && e._data.uncompressedSize != null ? e._data.uncompressedSize : 0);
+                        return sum + (sz || 0);
                     }, 0);
                     if (instanceNames.length === 0 && uploadNames.length === 0) {
                         showPreview('<span style="color: #dc2626;">В архиве нет каталогов instance/ или uploads/</span>', false);
