@@ -276,21 +276,22 @@ def quick_create_section():
 
 
 def _backup_paths():
-    """Абсолютные пути к папкам instance и static/uploads."""
+    """Абсолютные пути: instance, static/uploads, uploads (корень)."""
     project_root = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     return (
         os.path.join(project_root, 'instance'),
         os.path.join(project_root, 'static', 'uploads'),
+        os.path.join(project_root, 'uploads'),
     )
 
 
 @admin_bp.route('/backup/export-preview')
 @login_required
 def backup_export_preview():
-    """Предпросмотр: что попадёт в архив (instance + uploads)."""
+    """Предпросмотр: что попадёт в архив (instance, static/uploads, uploads)."""
     try:
-        instance_path, uploads_path = _backup_paths()
-        data = preview_folders_backup(instance_path, uploads_path)
+        instance_path, static_uploads_path, uploads_root_path = _backup_paths()
+        data = preview_folders_backup(instance_path, static_uploads_path, uploads_root_path)
         return jsonify(data)
     except Exception as e:
         logger.error(f"Ошибка при предпросмотре выгрузки: {e}")
@@ -300,10 +301,10 @@ def backup_export_preview():
 @admin_bp.route('/backup/export')
 @login_required
 def backup_export():
-    """Выгрузка резервной копии: ZIP с папками instance и uploads."""
+    """Выгрузка резервной копии: ZIP с instance, static/uploads, uploads."""
     try:
-        instance_path, uploads_path = _backup_paths()
-        path = export_folders_backup(instance_path, uploads_path)
+        instance_path, static_uploads_path, uploads_root_path = _backup_paths()
+        path = export_folders_backup(instance_path, static_uploads_path, uploads_root_path)
         filename = f"backup_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.zip"
         resp = send_file(
             path,
@@ -338,11 +339,11 @@ def backup_import():
         if not f.filename or not f.filename.lower().endswith('.zip'):
             return jsonify({'success': False, 'error': 'Нужен файл .zip'}), 400
         raw = f.read()
-        instance_path, uploads_path = _backup_paths()
+        instance_path, static_uploads_path, uploads_root_path = _backup_paths()
         clear_before = request.form.get('clear_before', 'true').lower() in ('1', 'true', 'yes')
-        import_folders_backup(raw, instance_path, uploads_path, clear_before=clear_before)
+        import_folders_backup(raw, instance_path, static_uploads_path, uploads_root_path, clear_before=clear_before)
         logger.info("Восстановление из резервной копии выполнено успешно")
-        return jsonify({'success': True, 'message': 'Резервная копия восстановлена (instance и загрузки)'})
+        return jsonify({'success': True, 'message': 'Резервная копия восстановлена (instance, static/uploads, uploads)'})
     except ValueError as e:
         return jsonify({'success': False, 'error': str(e)}), 400
     except Exception as e:

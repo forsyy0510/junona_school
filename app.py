@@ -54,14 +54,12 @@ def create_app():
             'Настоятельно рекомендуется задать SECRET_KEY в переменных окружения.'
         )
     
-    # Создаем папку instance если её нет
     instance_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
     os.makedirs(instance_path, exist_ok=True)
-    
-    # Используем абсолютный путь к базе данных
-    db_path = os.path.join(instance_path, 'site.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-    
+    if not os.environ.get('DATABASE_URL'):
+        db_path = os.path.join(instance_path, 'site.db')
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+
     # Инициализация расширений
     db.init_app(app)
 

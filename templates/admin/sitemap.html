@@ -32,7 +32,7 @@
 
     <div style="margin-top: 32px; background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <h2 style="margin: 0 0 16px; font-size: 1.25rem;">Резервное копирование</h2>
-        <p style="color: #6b7280; margin-bottom: 16px;">Копия папок <strong>instance</strong> (база данных) и <strong>загрузки</strong> (static/uploads). Один архив ZIP для выгрузки и восстановления.</p>
+        <p style="color: #6b7280; margin-bottom: 16px;">Копия папок <strong>instance</strong> (база данных), <strong>static/uploads</strong> и <strong>uploads</strong> (корень). Один архив ZIP для выгрузки и восстановления.</p>
         <p style="font-size: 0.875rem; color: #b45309; background: #fffbeb; padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #fcd34d;">
             <strong>Важно:</strong> На облачном хостинге (Render, Heroku и т.п.) диск временный — после <strong>перезапуска или нового деплоя</strong> восстановленные из ZIP файлы пропадут. Восстановление из копии имеет смысл на своём сервере (VPS) или локально.
         </p>
@@ -302,39 +302,45 @@
         return (n / (1024 * 1024)).toFixed(1) + ' МБ';
     }
 
-    function renderExportPreview(data) {
-        if (!data) return '';
-        var html = '<div class="backup-preview-title">Что попадёт в выгрузку</div>';
-        if (data.instance && data.instance.files && data.instance.files.length > 0) {
-            html += '<div class="backup-table-block"><h4>instance (база данных)</h4><ul style="margin: 0; padding-left: 20px;">';
-            data.instance.files.forEach(function(f) {
+    function renderFolderBlock(label, summary) {
+        if (!summary) return '';
+        var html = '<div class="backup-table-block"><h4>' + esc(label) + '</h4>';
+        if (summary.files && summary.files.length > 0) {
+            html += '<ul style="margin: 0; padding-left: 20px;">';
+            summary.files.forEach(function(f) {
                 var sizeStr = (f.size != null) ? ' <span class="backup-upload-file-size">' + formatBytes(f.size) + '</span>' : '';
                 html += '<li>' + esc(f.name) + sizeStr + '</li>';
             });
             html += '</ul></div>';
-        } else {
-            html += '<div class="backup-table-block"><h4>instance</h4><p style="margin: 0; color: #64748b;">Папка пуста или отсутствует</p></div>';
-        }
-        if (data.uploads) {
-            var u = data.uploads;
-            html += '<div class="backup-table-block"><h4>Загрузки (uploads)</h4>';
-            html += '<div style="font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">Всего файлов: <strong>' + (u.total_files || 0) + '</strong>, объём: <strong>' + formatBytes(u.total_size || 0) + '</strong></div>';
-            if (u.sections && u.sections.length > 0) {
-                u.sections.forEach(function(s) {
-                    html += '<div class="backup-upload-section"><div class="backup-upload-section-path">' + esc(s.path) + '</div>';
-                    html += '<div class="backup-upload-section-meta">' + s.count + ' файлов, ' + formatBytes(s.size) + '</div></div>';
+        } else if (summary.total_files > 0) {
+            html += '<div style="font-size: 0.8rem; color: #64748b;">Файлов: <strong>' + summary.total_files + '</strong>, объём: <strong>' + formatBytes(summary.total_size || 0) + '</strong></div>';
+            if (summary.sections && summary.sections.length > 0) {
+                summary.sections.slice(0, 8).forEach(function(s) {
+                    html += '<div class="backup-upload-section-meta">' + esc(s.path) + ': ' + s.count + ' файлов</div>';
                 });
+                if (summary.sections.length > 8) html += '<div class="backup-upload-section-meta">… и ещё</div>';
             }
             html += '</div>';
+        } else {
+            html += '<p style="margin: 0; color: #64748b;">Папка пуста или отсутствует</p></div>';
         }
         return html;
     }
 
-    function renderZipPreview(instanceCount, uploadsCount, uploadsSize) {
+    function renderExportPreview(data) {
+        if (!data) return '';
+        var html = '<div class="backup-preview-title">Что попадёт в выгрузку</div>';
+        html += renderFolderBlock('instance (база данных)', data.instance);
+        html += renderFolderBlock('static/uploads', data.static_uploads);
+        html += renderFolderBlock('uploads (корень)', data.uploads_root);
+        return html;
+    }
+
+    function renderZipPreview(counts) {
         var html = '<div class="backup-preview-title">Содержимое архива</div>';
-        html += '<div class="backup-table-block"><h4>instance</h4><p style="margin: 0;">' + (instanceCount || 0) + ' файлов</p></div>';
-        var sizeText = (uploadsSize && uploadsSize > 0) ? formatBytes(uploadsSize) : ' (в метаданных архива размер не указан)';
-        html += '<div class="backup-table-block"><h4>uploads</h4><p style="margin: 0;">' + (uploadsCount || 0) + ' файлов, объём ' + sizeText + '</p></div>';
+        html += '<div class="backup-table-block"><h4>instance</h4><p style="margin: 0;">' + (counts.instance || 0) + ' файлов</p></div>';
+        html += '<div class="backup-table-block"><h4>static_uploads</h4><p style="margin: 0;">' + (counts.static_uploads || 0) + ' файлов</p></div>';
+        html += '<div class="backup-table-block"><h4>uploads</h4><p style="margin: 0;">' + (counts.uploads || 0) + ' файлов</p></div>';
         return html;
     }
 
@@ -394,16 +400,13 @@
                 JSZip.loadAsync(reader.result).then(function(zip) {
                     var names = Object.keys(zip.files);
                     var instanceNames = names.filter(function(n) { return n.indexOf('instance/') === 0 && !n.endsWith('/'); });
+                    var staticUploadsNames = names.filter(function(n) { return n.indexOf('static_uploads/') === 0 && !n.endsWith('/'); });
                     var uploadNames = names.filter(function(n) { return n.indexOf('uploads/') === 0 && !n.endsWith('/'); });
-                    var uploadsSize = uploadNames.reduce(function(sum, n) {
-                        var e = zip.files[n];
-                        var sz = e && (e.uncompressedSize != null) ? e.uncompressedSize : (e && e._data && e._data.uncompressedSize != null ? e._data.uncompressedSize : 0);
-                        return sum + (sz || 0);
-                    }, 0);
-                    if (instanceNames.length === 0 && uploadNames.length === 0) {
-                        showPreview('<span style="color: #dc2626;">В архиве нет каталогов instance/ или uploads/</span>', false);
+                    var counts = { instance: instanceNames.length, static_uploads: staticUploadsNames.length, uploads: uploadNames.length };
+                    if (counts.instance === 0 && counts.static_uploads === 0 && counts.uploads === 0) {
+                        showPreview('<span style="color: #dc2626;">В архиве нет каталогов instance/, static_uploads/ или uploads/</span>', false);
                     } else {
-                        showPreview(renderZipPreview(instanceNames.length, uploadNames.length, uploadsSize), false);
+                        showPreview(renderZipPreview(counts), false);
                     }
                 }).catch(function() {
                     showPreview('<span style="color: #dc2626;">Не удалось прочитать ZIP-архив</span>', false);
