@@ -2862,6 +2862,8 @@ text_data.form_data.short_name }}. {% endif %}{% endif %}{% endif %}Сведен
                                             {% set sub_rows = (row[2] if row and row|length > 2 and row[2] is iterable and row[2] is not string else []) %}
                                             {% set left_stripped = (left_cell|default('')|string|trim) %}
                                             {% set left_blank = not left_stripped or left_stripped|length == 0 %}
+                                            {% set right_stripped = (right_cell|default('')|string|trim) %}
+                                            {% set right_blank = not right_stripped or right_stripped|length == 0 %}
                                             {% set right_has_files = right_cell is string and (('/info/download_file/' in right_cell or '/download_file/' in right_cell or right_cell.startswith('/info/download_file/') or right_cell.startswith('/download_file/') or right_cell.startswith('/static/uploads/') or ',' in right_cell)) %}
                                             {% set row_itemprop = (row_itemprops[loop.index0] if row_itemprops and row_itemprops|length > loop.index0 else '') %}
                                             <tr>
@@ -2897,6 +2899,10 @@ text_data.form_data.short_name }}. {% endif %}{% endif %}{% endif %}Сведен
                                                     {% endif %}
                                                 </td>
                                                 {% else %}
+                                                {# Если заполнен только первый столбец (второй пустой и без файлов/подстрок) — растягиваем его на всю строку #}
+                                                {% if not left_blank and right_blank and not right_has_files and not sub_rows %}
+                                                <td colspan="2"{% if row_itemprop %} itemprop="{{ row_itemprop }}"{% endif %}>{{ left_cell }}</td>
+                                                {% else %}
                                                 <td>{{ left_cell }}</td>
                                                 <td{% if row_itemprop %} itemprop="{{ row_itemprop }}"{% endif %}>
                                                     {% if ',' in right_cell and right_has_files %}
@@ -2928,6 +2934,7 @@ text_data.form_data.short_name }}. {% endif %}{% endif %}{% endif %}Сведен
                                                     </div>
                                                     {% endif %}
                                                 </td>
+                                                {% endif %}
                                                 {% endif %}
                                             </tr>
                                             {% endfor %}
