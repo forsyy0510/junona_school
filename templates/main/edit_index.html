@@ -48,6 +48,7 @@
     margin-bottom: 8px;
     font-weight: 600;
     color: #374151;
+    font-size: 1.1rem;
 }
 
 .form-group input,
@@ -193,7 +194,7 @@
     </div>
 
     {% set block_order = page_content.get('block_order', ['header', 'slider', 'announcements', 'news', 'school_info', 'directions', 'events_achievements']) %}
-    {% set block_titles = {'header': '🏫 Блок названия организации', 'slider': '🖼️ Слайдер на главной', 'news': '📰 Новости', 'school_info': '📋 Достижения, IT-инфраструктура, Педагоги, Партнёрство', 'directions': '🎯 Направления обучения', 'events_achievements': '🌟 События и достижения', 'announcements': '📢 Объявления'} %}
+    {% set block_titles = {'header': 'Блок названия организации', 'slider': 'Слайдер на главной', 'news': 'Новости', 'school_info': 'Достижения, IT-инфраструктура, Педагоги, Партнёрство', 'directions': 'Направления обучения', 'events_achievements': 'События и достижения', 'announcements': 'Объявления'} %}
 
     <form class="edit-form" id="editForm" method="POST">
         <input type="hidden" name="block_order" id="blockOrderInput" value="{{ page_content.get('block_order_json', '[]') }}">
@@ -253,7 +254,7 @@
 
             {% elif block_id == 'school_info' %}
             <div class="form-group">
-                <label>🏆 Достижения</label>
+                <label>Достижения</label>
                 <div id="achievements-list">
                     {% for item in page_content.get('achievements', []) %}
                     <div class="list-item">
@@ -265,7 +266,7 @@
                 <button type="button" class="btn-add" onclick="addListItem('achievements-list', 'achievements[]')">+ Добавить достижение</button>
             </div>
             <div class="form-group">
-                <label>💻 IT-Инфраструктура</label>
+                <label>IT-Инфраструктура</label>
                 <div id="it-infrastructure-list">
                     {% for item in page_content.get('it_infrastructure', []) %}
                     <div class="list-item">
@@ -277,7 +278,7 @@
                 <button type="button" class="btn-add" onclick="addListItem('it-infrastructure-list', 'it_infrastructure[]')">+ Добавить элемент</button>
             </div>
             <div class="form-group">
-                <label>👨‍🏫 Педагоги</label>
+                <label>Педагоги</label>
                 <div id="teachers-list">
                     {% for item in page_content.get('teachers', []) %}
                     <div class="list-item">
@@ -289,7 +290,7 @@
                 <button type="button" class="btn-add" onclick="addListItem('teachers-list', 'teachers[]')">+ Добавить пункт</button>
             </div>
             <div class="form-group">
-                <label>🤝 Партнёрство</label>
+                <label>Партнёрство</label>
                 <div id="partnership-list">
                     {% for item in page_content.get('partnership', []) %}
                     <div class="list-item">
@@ -317,7 +318,7 @@
 
             {% elif block_id == 'events_achievements' %}
             <div class="form-group">
-                <label>📅 Ближайшие события</label>
+                <label>Ближайшие события</label>
                 <div id="events-list">
                     {% for event in page_content.get('events', []) %}
                     <div class="list-item" style="flex-direction: column; align-items: stretch; gap: 8px; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
@@ -332,7 +333,7 @@
                 <button type="button" class="btn-add" onclick="addEventItem()">+ Добавить событие</button>
             </div>
             <div class="form-group">
-                <label>🌟 Последние достижения</label>
+                <label>Последние достижения</label>
                 <div id="achievements-list-items">
                     {% for item in page_content.get('achievements_list', []) %}
                     <div class="list-item">

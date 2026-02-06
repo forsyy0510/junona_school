@@ -1154,8 +1154,6 @@
         <form method="post" action="/users/logout" style="margin: 0;">
             <button type="submit" class="btn btn-nav-logout">Выйти</button>
         </form>
-        {% else %}
-        <button type="button" class="btn btn-nav-login" id="openLoginModalBtn2">Войти</button>
         {% endif %}
     </div>
 </div>
@@ -1168,9 +1166,6 @@
     <a class="btn header-actions-btn" href="/edit/index">Редактировать главную</a>
 </div>
 {% endif %}
-<script>
-(function(){ var btn = document.getElementById('openLoginModalBtn2'); if(btn){ btn.addEventListener('click', function(){ var m = document.getElementById('loginModal'); if(m) m.style.display = 'flex'; }); } })();
-</script>
 
 <!-- Login Modal -->
 <div class="modal-backdrop" id="loginModal">
@@ -1241,6 +1236,16 @@
         </ul>
       {% endif %}
     </nav>
+    <div class="sidebar-viti-link" style="margin-top: 12px; padding: 12px; border: 2px solid #2563eb; border-radius: 12px;">
+      <a href="https://viti-mephi.ru/" target="_blank" rel="noopener noreferrer" title="Волгодонский инженерно-технический институт — филиал НИЯУ МИФИ">
+        <img src="/static/images/channels4_profile.jpg" alt="ВИТИ НИЯУ МИФИ" style="max-width: 100%; height: auto; display: block; border-radius: 8px; outline: 2px solid #2563eb; outline-offset: 0;">
+      </a>
+      {% if not current_user.is_authenticated %}
+      <div style="margin-top: 10px;">
+        <button type="button" class="btn btn-nav-login" id="openLoginModalBtn2" style="width: 100%; outline: 2px solid #2563eb; outline-offset: 0;">Войти</button>
+      </div>
+      {% endif %}
+    </div>
   </aside>
 
   <style>
@@ -1563,9 +1568,12 @@
 <script>
   const loginModal = document.getElementById('loginModal');
   const openLoginBtn = document.getElementById('openLoginModalBtn');
+  const openLoginBtn2 = document.getElementById('openLoginModalBtn2');
   const closeLoginBtn = document.getElementById('closeLoginModalBtn');
-  if (openLoginBtn) {
-    openLoginBtn.addEventListener('click', () => { loginModal.style.display = 'flex'; });
+  if (loginModal) {
+    const showLoginModal = () => { loginModal.style.display = 'flex'; };
+    if (openLoginBtn) openLoginBtn.addEventListener('click', showLoginModal);
+    if (openLoginBtn2) openLoginBtn2.addEventListener('click', showLoginModal);
   }
   if (closeLoginBtn) {
     closeLoginBtn.addEventListener('click', () => { loginModal.style.display = 'none'; });

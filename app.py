@@ -9,6 +9,7 @@ from database import db
 from config import config
 import os
 from werkzeug.exceptions import RequestEntityTooLarge
+from sqlalchemy.exc import OperationalError
 
 
 def create_app():
@@ -908,7 +909,23 @@ def create_app():
     # Регистрация обработчиков ошибок
     for error_code in ERROR_HANDLERS.keys():
         app.errorhandler(error_code)(create_error_handler(error_code))
-    
+
+    @app.errorhandler(OperationalError)
+    def handle_db_operational_error(e):
+        """При ошибках доступа к БД (disk I/O, locked и т.п.) показываем понятную страницу"""
+        app.logger.warning(f"Ошибка доступа к БД: {e}")
+        return render_error_template(
+            503,
+            'Временная ошибка доступа к данным',
+            'Сервис временно не может обратиться к базе данных. Попробуйте обновить страницу через несколько секунд. Если ошибка повторяется, обратитесь к администратору.',
+            [
+                'Обновите страницу (F5)',
+                'Убедитесь, что база данных не в папке облачного хранилища (OneDrive и т.п.)',
+                'Проверьте свободное место на диске и права доступа к файлу БД'
+            ],
+            error_details=app.config.get('DEBUG') and str(getattr(e, 'orig', e)) or None
+        ), 503
+
     # Создание таблиц базы данных
     with app.app_context():
         # Импортируем все модели для создания таблиц

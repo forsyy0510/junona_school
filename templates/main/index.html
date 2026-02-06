@@ -93,7 +93,7 @@
       {% if block_id == 'header' %}
     <div class="main-block" style="text-align: center; margin-top: 0; margin-bottom: 12px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; color: white; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
         <h1 style="margin: 0 0 12px 0; font-size: 1.5rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">{{ header_title }}</h1>
-        <p style="margin: 0; font-size: 1rem; opacity: 0.9; font-weight: 500;">{{ header_subtitle }}</p>
+        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">{{ header_subtitle }}</p>
         {% if _header_tags %}
         <div style="margin-top: 12px; font-size: 0.9rem; opacity: 0.8;">{{ _header_tags | join(' • ') }}</div>
         {% endif %}
@@ -134,26 +134,29 @@
         {% endif %}
       </div>
       <div class="hero-announcements" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
-        <h2 style="margin: 0 0 8px 0; font-size: 1.2rem; color: #1e293b;">Объявления</h2>
+        <h2 style="margin: 0 0 8px 0; font-size: 1.2rem; color: #1e293b; text-align: center;">Объявления</h2>
         {% if announcements %}
-        <div id="heroAnnouncementsCarousel" class="hero-announcements-carousel" style="flex: 1; position: relative; overflow: hidden; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-height: 200px;">
+        <div id="heroAnnouncementsCarousel" class="hero-announcements-carousel" style="flex: 1; position: relative; min-height: 0; display: flex; flex-direction: column; overflow: hidden;">
             {% if current_user.is_authenticated %}
             <a href="/announcements/new" class="hero-ann-add-btn" style="position: absolute; top: 10px; right: 10px; z-index: 6; padding: 6px 12px; font-size: 0.85rem; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">Добавить объявление</a>
             {% endif %}
             <button type="button" class="hero-ann-btn hero-ann-btn--prev" aria-label="Предыдущее">‹</button>
             <button type="button" class="hero-ann-btn hero-ann-btn--next" aria-label="Следующее">›</button>
-            <div class="hero-ann-track" style="position: absolute; left: 0; right: 0; top: 0; height: {{ announcements|length * 100 }}%; display: flex; flex-direction: column; transition: transform 0.4s ease;">
+            <div class="hero-ann-track" style="flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 0; overflow-x: auto; scroll-behavior: smooth; padding: 4px 0 12px 0; scrollbar-width: thin; scroll-snap-type: x mandatory;">
                 {% for a in announcements %}
-                <a href="/announcements/{{ a.id }}" class="hero-ann-card" style="flex: 0 0 {{ 100 / announcements|length }}%; padding: 16px; box-sizing: border-box; display: block; text-decoration: none; color: inherit; overflow-y: auto;">
-                    {% set image_files = a.files | selectattr('kind', 'equalto', 'image') | list %}
-                    {% if image_files %}
-                    <img src="{{ (image_files[0]).filename | announcement_file_url(a.id) }}" alt="{{ a.title }}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
-                    {% else %}
-                    <div style="width: 100%; height: 80px; background: #e2e8f0; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.9rem;">Нет фото</div>
-                    {% endif %}
-                    <div style="font-weight: 600; font-size: 1rem; color: #1e293b; margin-bottom: 4px;">{{ a.title | truncate(50, True, '...') }} {% if a.is_featured %}⭐{% endif %}</div>
-                    <div style="font-size: 0.8rem; color: #64748b;">{{ (a.publication_date or a.created_at).strftime('%d.%m.%Y') }}</div>
-                    <div style="font-size: 0.85rem; color: #475569; margin-top: 6px;">{{ a.content[:80] }}{% if a.content|length > 80 %}...{% endif %}</div>
+                <a href="/announcements/{{ a.id }}" class="hero-ann-card" style="flex: 0 0 100%; width: 100%; min-width: 100%; box-sizing: border-box; scroll-snap-align: start; display: flex; flex-direction: column; text-decoration: none; color: inherit; overflow: hidden; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';">
+                    <div style="flex: 1; min-height: 0; background: #e2e8f0; overflow: hidden; border-radius: 8px 8px 0 0; position: relative;">
+                        {% set image_files = a.files | selectattr('kind', 'equalto', 'image') | list %}
+                        {% if image_files %}
+                        <img src="{{ (image_files[0]).filename | announcement_file_url(a.id) }}" alt="{{ a.title }}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;">
+                        {% else %}
+                        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.9rem;">Нет фото</div>
+                        {% endif %}
+                    </div>
+                    <div style="flex-shrink: 0; padding: 12px 14px;">
+                        <div style="font-weight: 600; font-size: 1rem; color: #1e293b; line-height: 1.35;">{{ a.title | truncate(50, True, '...') }} {% if a.is_featured %}⭐{% endif %}</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">{{ (a.publication_date or a.created_at).strftime('%d.%m.%Y') }}</div>
+                    </div>
                 </a>
                 {% endfor %}
             </div>
@@ -162,18 +165,21 @@
         (function() {
             var car = document.getElementById('heroAnnouncementsCarousel');
             if (!car) return;
-            var track = car.querySelector('.hero-ann-track');
+            var row = car.querySelector('.hero-ann-track');
             var cards = car.querySelectorAll('.hero-ann-card');
-            var n = cards.length;
-            if (n === 0) return;
-            var idx = 0;
-            function go() { track.style.transform = 'translateY(-' + (idx * (100 / n)) + '%)'; }
+            if (cards.length === 0) return;
+            var step = row.clientWidth;
             var prevBtn = car.querySelector('.hero-ann-btn--prev');
             var nextBtn = car.querySelector('.hero-ann-btn--next');
-            if (prevBtn) prevBtn.onclick = function() { idx = (idx - 1 + n) % n; go(); };
-            if (nextBtn) nextBtn.onclick = function() { idx = (idx + 1) % n; go(); };
-            go();
-            if (n > 1) setInterval(function() { idx = (idx + 1) % n; go(); }, 6000);
+            if (prevBtn) prevBtn.onclick = function() { row.scrollBy({ left: -step, behavior: 'smooth' }); };
+            if (nextBtn) nextBtn.onclick = function() { row.scrollBy({ left: step, behavior: 'smooth' }); };
+            if (cards.length > 1) {
+                setInterval(function() {
+                    var nearEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 10;
+                    if (nearEnd) row.scrollTo({ left: 0, behavior: 'smooth' });
+                    else row.scrollBy({ left: step, behavior: 'smooth' });
+                }, 6000);
+            }
         })();
         </script>
         {% else %}
@@ -250,25 +256,25 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
                     {% if _achievements %}
                     <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid #3b82f6;">
-                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">🏆 Достижения</h3>
+                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">Достижения</h3>
                         <ul style="margin: 0; padding-left: 20px; color: #4b5563;">{% for item in _achievements %}<li>{{ item }}</li>{% endfor %}</ul>
                     </div>
                     {% endif %}
                     {% if _it_infra %}
                     <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid #10b981;">
-                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">💻 IT-Инфраструктура</h3>
+                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">IT-Инфраструктура</h3>
                         <ul style="margin: 0; padding-left: 20px; color: #4b5563;">{% for item in _it_infra %}<li>{{ item }}</li>{% endfor %}</ul>
                     </div>
                     {% endif %}
                     {% if _teachers %}
                     <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid #f59e0b;">
-                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">👨‍🏫 Педагоги</h3>
+                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">Педагоги</h3>
                         <ul style="margin: 0; padding-left: 20px; color: #4b5563;">{% for item in _teachers %}<li>{{ item }}</li>{% endfor %}</ul>
                     </div>
                     {% endif %}
                     {% if _partnership %}
                     <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid #8b5cf6;">
-                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">🤝 Партнёрство</h3>
+                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">Партнёрство</h3>
                         <ul style="margin: 0; padding-left: 20px; color: #4b5563;">{% for item in _partnership %}<li>{{ item }}</li>{% endfor %}</ul>
                     </div>
                     {% endif %}
@@ -286,7 +292,7 @@
     <div class="main-block" style="margin-top: 8px; margin-bottom: 12px;">
         <div class="card item" style="max-width: 100%; margin: 0 auto; text-align: left;">
             <div style="padding: 20px;">
-                <h2 style="color: #1e293b; margin-bottom: 14px; font-size: 1.6rem; text-align: center;">🎯 Направления обучения</h2>
+                <h2 style="color: #1e293b; margin-bottom: 14px; font-size: 1.6rem; text-align: center;">Направления обучения</h2>
                 {% if _directions %}
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
                     {% for d in _directions %}
@@ -309,18 +315,18 @@
     <div class="main-block" style="margin-top: 8px; margin-bottom: 12px;">
         <div class="card item" style="max-width: 100%; margin: 0 auto; text-align: left;">
             <div style="padding: 20px;">
-                <h2 style="color: #1e293b; margin-bottom: 14px; font-size: 1.6rem; text-align: center;">🌟 Важные события и достижения</h2>
+                <h2 style="color: #1e293b; margin-bottom: 14px; font-size: 1.6rem; text-align: center;">Важные события и достижения</h2>
                 {% if _events or _achievements_list %}
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px;">
                     {% if _events %}
                     <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); padding: 16px; border-radius: 12px; border: 2px solid #ef4444;">
-                        <h3 style="color: #dc2626; margin-bottom: 12px; font-size: 1.2rem;">📅 Текущие события</h3>
+                        <h3 style="color: #dc2626; margin-bottom: 12px; font-size: 1.2rem;">Текущие события</h3>
                         <ul style="margin: 0; padding-left: 20px; color: #7f1d1d;">{% for event in _events %}<li style="margin-bottom: 8px;"><strong>{{ event.get('date', '') }}:</strong> {{ event.get('text', '') }}</li>{% endfor %}</ul>
                     </div>
                     {% endif %}
                     {% if _achievements_list %}
                     <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 16px; border-radius: 12px; border: 2px solid #22c55e;">
-                        <h3 style="color: #16a34a; margin-bottom: 12px; font-size: 1.2rem;">🏆 Последние достижения</h3>
+                        <h3 style="color: #16a34a; margin-bottom: 12px; font-size: 1.2rem;">Последние достижения</h3>
                         <ul style="margin: 0; padding-left: 20px; color: #166534;">{% for item in _achievements_list %}<li style="margin-bottom: 8px;">{{ item }}</li>{% endfor %}</ul>
                     </div>
                     {% endif %}

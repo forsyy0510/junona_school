@@ -5600,20 +5600,22 @@ text_data.form_data.short_name }}. {% endif %}{% endif %}{% endif %}Сведен
                         }
 
                         .person-card-photo-wrap {
-                            width: 100%;
-                            aspect-ratio: 3/4;
-                            max-height: 280px;
+                            width: 130px;
+                            height: 130px;
+                            border-radius: 50%;
+                            margin: 0 auto;
                             background: #f1f5f9;
                             overflow: hidden;
                             display: flex;
                             align-items: center;
                             justify-content: center;
+                            flex-shrink: 0;
                         }
 
                         .person-card-photo-wrap.person-card-photo-placeholder {
                             background: #e2e8f0;
                             color: #64748b;
-                            font-size: 1rem;
+                            font-size: 0.9rem;
                         }
 
                         .person-card-image {
@@ -5645,9 +5647,9 @@ text_data.form_data.short_name }}. {% endif %}{% endif %}{% endif %}Сведен
 
                         .person-photo {
                             flex-shrink: 0;
-                            width: 180px;
-                            height: 240px;
-                            border-radius: 10px;
+                            width: 100px;
+                            height: 100px;
+                            border-radius: 50%;
                             overflow: hidden;
                             border: 2px solid #e5e7eb;
                             background: #f8fafc;

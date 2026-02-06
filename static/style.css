@@ -190,21 +190,22 @@ div.card.item {
     padding: 8px 18px !important;
     font-size: 14px !important;
     font-weight: 600 !important;
-    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-    color: #fff !important;
+    background: #fff !important;
+    color: #2563eb !important;
     height: 36px !important;
     display: inline-flex !important;
     align-items: center !important;
-    border: none;
+    border: 1px solid #2563eb;
     border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(245,158,11,0.35);
+    box-shadow: 0 2px 8px rgba(37,99,235,0.15);
     margin: 0 !important;
     line-height: 1 !important;
 }
 .btn-nav-login:hover {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
-    color: #fff !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border-color: #1d4ed8;
 }
 .btn-nav-logout {
     padding: 8px 18px !important;
@@ -436,6 +437,7 @@ div.card.item {
     padding: 12px 0;
     margin-top: 2px;
     border: 1px solid var(--color-border);
+    text-align: left;
 }
 .dropdown:hover .dropdown-menu,
 .dropdown:focus-within .dropdown-menu {
@@ -450,6 +452,7 @@ div.card.item {
     font-size: 1em;
     border-radius: 0;
     transition: background 0.18s;
+    text-align: left;
 }
 .dropdown-menu a:hover {
     background: #f0f4fa;
@@ -564,7 +567,7 @@ div.card.item {
 }
 .sidebar-menu li {
     border-bottom: 1px solid rgba(255,255,255,0.13);
-    text-align: center;
+    text-align: left;
 }
 .sidebar-menu li:last-child {
     border-bottom: none;
@@ -576,18 +579,19 @@ div.card.item {
     font-weight: 500;
     font-size: 0.98em;
     line-height: 1.35;
-    padding: 10px 8px;
+    padding: 10px 12px;
     transition: background 0.18s, color 0.18s;
     letter-spacing: 0.01em;
     border-radius: 0;
     font-family: inherit;
+    text-align: left;
 }
 .sidebar-menu a:hover, .sidebar-menu a:focus {
     background: rgba(37,99,235,0.13);
     color: var(--color-primary);
 }
 .sidebar-menu__more-toggle {
-    text-align: center;
+    text-align: left;
     border-bottom: none;
     margin: 0;
     padding: 0;
@@ -625,13 +629,13 @@ div.card.item {
     font-family: inherit;
     font-weight: 500;
     cursor: pointer;
-    padding: 10px 8px;
+    padding: 10px 12px;
     width: 100%;
     transition: background 0.18s, color 0.18s;
     border-radius: 0;
     outline: none;
     letter-spacing: 0.01em;
-    text-align: center;
+    text-align: left;
     margin: 0;
     display: block;
 }
