@@ -5,15 +5,9 @@ from flask import render_template, request, jsonify, send_file
 from flask_login import login_required
 from . import admin_bp
 from .backup_restore import (
-    export_data,
-    import_data,
-    export_preview,
-    export_full_site,
-    import_full_site,
-    export_data_news,
-    export_data_sveden,
-    export_data_sidebar,
-    export_data_selective,
+    preview_folders_backup,
+    export_folders_backup,
+    import_folders_backup,
 )
 from info.models import InfoSection
 from database import db
@@ -281,14 +275,22 @@ def quick_create_section():
         return jsonify({'success': False, 'error': str(e)})
 
 
+def _backup_paths():
+    """Абсолютные пути к папкам instance и static/uploads."""
+    project_root = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    return (
+        os.path.join(project_root, 'instance'),
+        os.path.join(project_root, 'static', 'uploads'),
+    )
+
+
 @admin_bp.route('/backup/export-preview')
 @login_required
 def backup_export_preview():
-    """Предпросмотр выгрузки: что попадёт в архив (таблицы + разделы uploads)."""
+    """Предпросмотр: что попадёт в архив (instance + uploads)."""
     try:
-        root = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'))
-        uploads_dir = os.path.join(root, 'uploads')
-        data = export_preview(uploads_dir)
+        instance_path, uploads_path = _backup_paths()
+        data = preview_folders_backup(instance_path, uploads_path)
         return jsonify(data)
     except Exception as e:
         logger.error(f"Ошибка при предпросмотре выгрузки: {e}")
@@ -298,118 +300,16 @@ def backup_export_preview():
 @admin_bp.route('/backup/export')
 @login_required
 def backup_export():
-    """Выгрузка данных сайта в JSON-файл для резервного копирования."""
+    """Выгрузка резервной копии: ZIP с папками instance и uploads."""
     try:
-        data = export_data()
-        buf = BytesIO()
-        buf.write(json.dumps(data, ensure_ascii=False, indent=2).encode('utf-8'))
-        buf.seek(0)
-        filename = f"site_backup_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
-        return send_file(
-            buf,
-            mimetype='application/json',
-            as_attachment=True,
-            download_name=filename
-        )
-    except Exception as e:
-        logger.error(f"Ошибка при выгрузке данных: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@admin_bp.route('/backup/export-news')
-@login_required
-def backup_export_news():
-    """Выгрузка только новостей и объявлений (JSON)."""
-    try:
-        data = export_data_news()
-        buf = BytesIO()
-        buf.write(json.dumps(data, ensure_ascii=False, indent=2).encode('utf-8'))
-        buf.seek(0)
-        filename = f"backup_news_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
-        return send_file(buf, mimetype='application/json', as_attachment=True, download_name=filename)
-    except Exception as e:
-        logger.error(f"Ошибка выгрузки новостей: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@admin_bp.route('/backup/export-sveden')
-@login_required
-def backup_export_sveden():
-    """Выгрузка только основных разделов сведений /sveden/* (JSON)."""
-    try:
-        data = export_data_sveden()
-        buf = BytesIO()
-        buf.write(json.dumps(data, ensure_ascii=False, indent=2).encode('utf-8'))
-        buf.seek(0)
-        filename = f"backup_sveden_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
-        return send_file(buf, mimetype='application/json', as_attachment=True, download_name=filename)
-    except Exception as e:
-        logger.error(f"Ошибка выгрузки основных разделов: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@admin_bp.route('/backup/export-sidebar')
-@login_required
-def backup_export_sidebar():
-    """Выгрузка только разделов бокового меню /sidebar/* (JSON)."""
-    try:
-        data = export_data_sidebar()
-        buf = BytesIO()
-        buf.write(json.dumps(data, ensure_ascii=False, indent=2).encode('utf-8'))
-        buf.seek(0)
-        filename = f"backup_sidebar_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
-        return send_file(buf, mimetype='application/json', as_attachment=True, download_name=filename)
-    except Exception as e:
-        logger.error(f"Ошибка выгрузки бокового меню: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@admin_bp.route('/backup/export-selective', methods=['POST'])
-@login_required
-def backup_export_selective():
-    """Выборочная выгрузка: состав задаётся формой (news, sveden, sidebar, page_content, other_sections, users)."""
-    try:
-        form = request.get_json(silent=True) or request.form
-        include_news = form.get('include_news') in ('1', 'true', 'yes', True)
-        include_sveden = form.get('include_sveden') in ('1', 'true', 'yes', True)
-        include_sidebar = form.get('include_sidebar') in ('1', 'true', 'yes', True)
-        include_page_content = form.get('include_page_content') in ('1', 'true', 'yes', True)
-        include_other_sections = form.get('include_other_sections') in ('1', 'true', 'yes', True)
-        include_users = form.get('include_users') in ('1', 'true', 'yes', True)
-        if not any([include_news, include_sveden, include_sidebar, include_page_content, include_other_sections, include_users]):
-            return jsonify({'success': False, 'error': 'Выберите хотя бы один тип данных'}), 400
-        data = export_data_selective(
-            include_news=include_news,
-            include_sveden=include_sveden,
-            include_sidebar=include_sidebar,
-            include_page_content=include_page_content,
-            include_other_sections=include_other_sections,
-            include_users=include_users,
-        )
-        buf = BytesIO()
-        buf.write(json.dumps(data, ensure_ascii=False, indent=2).encode('utf-8'))
-        buf.seek(0)
-        filename = f"backup_selective_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
-        return send_file(buf, mimetype='application/json', as_attachment=True, download_name=filename)
-    except Exception as e:
-        logger.error(f"Ошибка выборочной выгрузки: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@admin_bp.route('/backup/export-full')
-@login_required
-def backup_export_full():
-    """Выгрузка сайта целиком: все данные БД (JSON) + папка загрузок (uploads) в одном ZIP."""
-    try:
-        root = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'))
-        uploads_dir = os.path.join(root, 'uploads')
-        path = export_full_site(uploads_dir)
-        filename = f"site_full_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.zip"
+        instance_path, uploads_path = _backup_paths()
+        path = export_folders_backup(instance_path, uploads_path)
+        filename = f"backup_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.zip"
         resp = send_file(
             path,
             mimetype='application/zip',
             as_attachment=True,
-            download_name=filename
+            download_name=filename,
         )
         path_to_remove = path
 
@@ -423,14 +323,14 @@ def backup_export_full():
 
         return resp
     except Exception as e:
-        logger.error(f"Ошибка при полной выгрузке сайта: {e}")
+        logger.error(f"Ошибка при выгрузке резервной копии: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@admin_bp.route('/backup/import-full', methods=['POST'])
+@admin_bp.route('/backup/import', methods=['POST'])
 @login_required
-def backup_import_full():
-    """Загрузка сайта целиком из ZIP: данные БД + папка uploads."""
+def backup_import():
+    """Восстановление из ZIP (instance + uploads)."""
     try:
         if 'file' not in request.files:
             return jsonify({'success': False, 'error': 'Файл не выбран'}), 400
@@ -438,41 +338,14 @@ def backup_import_full():
         if not f.filename or not f.filename.lower().endswith('.zip'):
             return jsonify({'success': False, 'error': 'Нужен файл .zip'}), 400
         raw = f.read()
-        root = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'))
-        uploads_dir = os.path.join(root, 'uploads')
+        instance_path, uploads_path = _backup_paths()
         clear_before = request.form.get('clear_before', 'true').lower() in ('1', 'true', 'yes')
-        import_full_site(raw, uploads_dir, clear_before=clear_before)
-        logger.info("Импорт сайта из ZIP выполнен успешно")
-        return jsonify({'success': True, 'message': 'Сайт успешно загружен из архива (данные и загрузки)'})
+        import_folders_backup(raw, instance_path, uploads_path, clear_before=clear_before)
+        logger.info("Восстановление из резервной копии выполнено успешно")
+        return jsonify({'success': True, 'message': 'Резервная копия восстановлена (instance и загрузки)'})
     except ValueError as e:
         return jsonify({'success': False, 'error': str(e)}), 400
     except Exception as e:
-        logger.error(f"Ошибка при импорте сайта из ZIP: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@admin_bp.route('/backup/import', methods=['POST'])
-@login_required
-def backup_import():
-    """Загрузка данных из ранее выгруженного JSON-файла (полная замена данных)."""
-    try:
-        if 'file' not in request.files:
-            return jsonify({'success': False, 'error': 'Файл не выбран'}), 400
-        f = request.files['file']
-        if not f.filename or not f.filename.lower().endswith('.json'):
-            return jsonify({'success': False, 'error': 'Нужен файл .json'}), 400
-        raw = f.read()
-        try:
-            data = json.loads(raw.decode('utf-8'))
-        except (json.JSONDecodeError, UnicodeDecodeError) as e:
-            return jsonify({'success': False, 'error': f'Некорректный JSON: {e}'}), 400
-        clear_before = request.form.get('clear_before', 'true').lower() in ('1', 'true', 'yes')
-        import_data(data, clear_before=clear_before)
-        logger.info("Импорт данных из файла выполнен успешно")
-        return jsonify({'success': True, 'message': 'Данные успешно загружены из файла'})
-    except ValueError as e:
-        return jsonify({'success': False, 'error': str(e)}), 400
-    except Exception as e:
-        logger.error(f"Ошибка при импорте данных: {e}")
+        logger.error(f"Ошибка при восстановлении из копии: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 

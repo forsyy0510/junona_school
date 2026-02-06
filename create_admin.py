@@ -11,12 +11,12 @@ with app.app_context():
     if not admin:
         print("Creating admin user...")
         admin = User(username='admin', is_admin=True)
-        admin.set_password('admin')
+        admin.set_password('admin1234')
         db.session.add(admin)
     else:
         print("Updating admin user password...")
-        admin.set_password('admin')
+        admin.set_password('admin1234')
         admin.is_admin = True
     
     db.session.commit()
-    print("Admin user ready: admin / admin")
+    print("Admin user ready: admin / admin1234")
