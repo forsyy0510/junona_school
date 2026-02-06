@@ -2744,7 +2744,7 @@ text_data.form_data.short_name }}. {% endif %}{% endif %}{% endif %}Сведен
                     {# На странице "Питание" блок "Ежедневное меню" не отображаем (он доступен отдельной страницей) #}
 
                     <div class="content-blocks" role="list" {% if section.endpoint not in section_microdata
-                        %}itemprop="contentBlocks" {% endif %}>
+                        %}itemprop="structOrgUprav" {% endif %}>
                         {% for block in section.get_content_blocks() %}
                         {% set block_idx = loop.index0 %}
                         {% set block_type = block.get('type', 'text') %}
@@ -2898,15 +2898,16 @@ text_data.form_data.short_name }}. {% endif %}{% endif %}{% endif %}Сведен
                                                     </div>
                                                     {% endif %}
                                                 </td>
+                                                {% elif left_blank and not right_blank and not right_has_files and not sub_rows %}
+                                                {# Только правый столбец с текстом — ячейка на всю ширину, высота в 2 строки #}
+                                                <td colspan="2" class="table-cell-right-only-2rows"{% if row_itemprop %} itemprop="{{ row_itemprop }}"{% endif %}>
+                                                    {{ render_field_content('table_cell', '', right_cell, section.endpoint, false) }}
+                                                </td>
                                                 {% else %}
-                                                {# Если заполнен только первый столбец (второй пустой и без файлов/подстрок) — растягиваем его на всю строку #}
-                                                {% if not left_blank and right_blank and not right_has_files and not sub_rows %}
-                                                <td colspan="2"{% if row_itemprop %} itemprop="{{ row_itemprop }}"{% endif %}>{{ left_cell }}</td>
-                                                {% else %}
+                                                {# Левый столбец заполнен — строка в 2 столбца; оба заполнены — тоже 2 столбца #}
                                                 <td>{{ left_cell }}</td>
                                                 <td{% if row_itemprop %} itemprop="{{ row_itemprop }}"{% endif %}>
                                                     {% if ',' in right_cell and right_has_files %}
-                                                    {# Несколько файлов через запятую #}
                                                     {% set files = right_cell.split(',') %}
                                                     <div class="files-list">
                                                         {% for file_item in files %}
@@ -2934,7 +2935,6 @@ text_data.form_data.short_name }}. {% endif %}{% endif %}{% endif %}Сведен
                                                     </div>
                                                     {% endif %}
                                                 </td>
-                                                {% endif %}
                                                 {% endif %}
                                             </tr>
                                             {% endfor %}
@@ -5088,6 +5088,12 @@ text_data.form_data.short_name }}. {% endif %}{% endif %}{% endif %}Сведен
 
                         .content-table-sveden td:last-child {
                             width: 65%;
+                        }
+
+                        .content-table-sveden td.table-cell-right-only-2rows {
+                            width: 100%;
+                            min-height: 3.2em;
+                            vertical-align: top;
                         }
 
                         .content-table-sveden td {
