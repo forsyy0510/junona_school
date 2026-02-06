@@ -1,6 +1,6 @@
 /* Стили для контентных блоков */
 .content-block {
-  border: 2px solid #e2e8f0;
+  border: none;
   border-radius: 16px;
   padding: 30px;
   margin-bottom: 25px;

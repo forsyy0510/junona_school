@@ -738,7 +738,7 @@
         }
 
         .content-block {
-            border: 2px solid #e2e8f0;
+            border: none;
             border-radius: 16px;
             padding: 30px;
             margin-bottom: 25px;
@@ -761,13 +761,12 @@
         }
 
         .content-block:hover {
-            border-color: #667eea;
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
-            transform: translateY(-2px);
+            box-shadow: none;
+            transform: none;
         }
 
         .content-block:hover::before {
-            transform: scaleX(1);
+            transform: scaleX(0);
         }
 
         .content-block-header {
