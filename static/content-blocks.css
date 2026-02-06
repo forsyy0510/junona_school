@@ -5,9 +5,20 @@
   padding: 30px;
   margin-bottom: 25px;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  transition: all 0.3s ease;
+  transition: none;
   position: relative;
   overflow: hidden;
+}
+
+.content-block:hover {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: none;
+  transform: none;
+}
+
+.content-block:hover::before {
+  transform: scaleX(0);
+  opacity: 0;
 }
 
 /* Перенос длинных строк (например, URL) внутри текстовых блоков */
@@ -1273,4 +1284,44 @@
   min-width: 0;
   word-break: break-word;
   color: #334155;
+}
+
+/* Отключение hover у блоков документов на публичных страницах (переопределение wizard.css) */
+.content-block .document-item:hover,
+.content-block .document-link:hover,
+.content-block .file-item:hover,
+.content-block .download-link:hover,
+.content-block .text-content-documents a:hover,
+.content-block .text-content-documents .document-link:hover,
+.form-data-section .document-item:hover,
+.form-data-section .document-link:hover,
+.form-data-section .file-item:hover,
+.form-data-section .download-link:hover,
+.documents-list .document-item:hover,
+.documents-list .document-link:hover,
+.documents-list .file-item:hover,
+.documents-list .download-link:hover,
+.documents-list a:hover,
+.content-block .documents-list a:hover,
+.form-data-section .documents-list a:hover {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #2563eb !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.content-block .file-item .download-link:hover,
+.content-block .document-item .download-link:hover,
+.form-data-section .file-item .download-link:hover,
+.form-data-section .document-item .download-link:hover,
+.documents-list .download-link:hover,
+.documents-list a.document-link:hover,
+.content-block .text-content-documents a.document-link:hover {
+  background: #eff6ff !important;
+  background-color: #eff6ff !important;
+  color: #3b82f6 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
 }

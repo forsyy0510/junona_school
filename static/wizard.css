@@ -918,3 +918,38 @@
 .wizard-input-error {
   border-color: #ef4444 !important;
 }
+
+/* На публичных страницах отключаем hover у блоков документов */
+.content-block .document-item:hover,
+.content-block .document-link:hover,
+.content-block .file-item:hover,
+.content-block .download-link:hover,
+.form-data-section .document-item:hover,
+.form-data-section .document-link:hover,
+.form-data-section .file-item:hover,
+.form-data-section .download-link:hover,
+.documents-list .document-item:hover,
+.documents-list .file-item:hover,
+.documents-list .download-link:hover,
+.content-block .documents-list a:hover,
+.form-data-section .documents-list a:hover {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #2563eb !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.content-block .file-item .download-link:hover,
+.content-block .document-item .download-link:hover,
+.form-data-section .file-item .download-link:hover,
+.form-data-section .document-item .download-link:hover,
+.documents-list .download-link:hover,
+.documents-list a.document-link:hover {
+  background: #eff6ff !important;
+  background-color: #eff6ff !important;
+  color: #3b82f6 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
