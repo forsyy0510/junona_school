@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Фотоальбомы — Юнона{% endblock %}
+{% block meta_description %}Фотоальбомы МБОУ ИТ Гимназия Юнона. Фотографии школьных мероприятий, событий, праздников и достижений.{% endblock %}
+{% block meta_keywords %}фото школы, фотоальбомы, школьные фотографии, мероприятия гимназии{% endblock %}
+{% block content %}
+{% if current_user.is_authenticated %}
+<div style="text-align: right; margin-bottom: 16px;">
+    <a href="/edit/albums" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+        ✏️ Редактировать
+    </a>
+</div>
+{% endif %}
+<h1>Фотоальбомы</h1>
+<div class="news" style="display: flex; flex-wrap: wrap; gap: 24px;">
+    {% for album in (page_content|default({})).get('albums', [{'title': 'День знаний 2024', 'photo_count': '12 фото', 'id': 1}, {'title': 'Выпускной 2023', 'photo_count': '18 фото', 'id': 2}, {'title': 'Олимпиада по математике', 'photo_count': '9 фото', 'id': 3}]) %}
+    <div class="card item" style="width: 260px;">
+        <img src="https://placehold.co/240x140" alt="{{ album.get('title', 'Альбом') }}" style="width:100%; border-radius: 10px;">
+        <h2 style="margin: 12px 0 6px;">{{ album.get('title', 'Альбом') }}</h2>
+        <div class="date">{{ album.get('photo_count', '0 фото') }}</div>
+        <a class="btn" href="/albums/{{ album.get('id', loop.index) }}">Открыть альбом</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} 

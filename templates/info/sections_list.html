@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Сведения об образовательной организации — Юнона{% endblock %}
+{% block meta_description %}Сведения об образовательной организации МБОУ ИТ Гимназия Юнона: основные сведения, документы, структура, руководство, педагогический состав.{% endblock %}
+{% block meta_keywords %}сведения об организации, документы школы, структура гимназии, руководство, педагогический состав{% endblock %}
+{% block content %}
+<h1>Сведения об образовательной организации</h1>
+<div class="news">
+    {% for s in sections %}
+        <div class="card item">
+            <a class="item-title" href="/sections/{{ s.id }}">{{ s.title }}</a>
+        </div>
+    {% else %}
+        <div>Нет разделов</div>
+    {% endfor %}
+</div>
+{% endblock %} 

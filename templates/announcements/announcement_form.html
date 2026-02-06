@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — Юнона{% endblock %}
+{% block content %}
+<div class="card item" style="max-width: 720px; margin: 0 auto;">
+  <h1>{{ page_title }}</h1>
+  <form method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div style="margin-bottom:12px;">
+      {{ form.title.label }}<br>
+      {{ form.title(style="width:100%;padding:8px;border-radius:8px;border:1px solid #e5e7eb;box-sizing:border-box;") }}
+    </div>
+    <div style="margin-bottom:12px;">
+      {{ form.images.label }}<br>
+      {{ form.images(multiple=True, style="width:100%;padding:8px;border-radius:8px;border:1px solid #e5e7eb;box-sizing:border-box;") }}
+      <small style="color:#666;">Загрузите несколько фото. Превью выбирается ниже после загрузки.</small>
+    </div>
+    <div style="margin-bottom:12px;">
+      {{ form.publication_date.label }}<br>
+      {{ form.publication_date(type='date', style="width:100%;padding:8px;border-radius:8px;border:1px solid #e5e7eb;box-sizing:border-box;") }}
+      <small style="color:#666;">Если не указано — будет использована дата создания</small>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:flex;align-items:center;gap:8px;">
+        {{ form.is_featured() }} Сделать объявление главным
+      </label>
+    </div>
+    <div style="margin-bottom:12px;">
+      {{ form.content.label }}<br>
+      {{ form.content(rows=10, class_='js-rich', style="width:100%;padding:8px;border-radius:8px;border:1px solid #e5e7eb;box-sizing:border-box;") }}
+    </div>
+    <div style="margin-bottom:12px;">
+      {{ form.files.label }}<br>
+      {{ form.files(multiple=True, style="width:100%;padding:8px;border-radius:8px;border:1px solid #e5e7eb;box-sizing:border-box;") }}
+      <small style="color:#666;">Документы (PDF, DOC, DOCX, TXT)</small>
+    </div>
+    {% if images %}
+    <div style="margin:12px 0;">
+      <div style="font-weight:600; margin-bottom:6px;">Выберите изображение для превью:</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        {% for img in images %}
+        <label style="display:inline-block; text-align:center;">
+          <input type="radio" name="preview_image" value="{{ img.filename }}" {% if item and item.image==img.filename or img.is_preview %}checked{% endif %}>
+          <img src="/uploads/images/announcements/{{ img.filename }}" alt="prev" style="width:120px;height:80px;object-fit:cover;border-radius:6px;display:block;">
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    <div style="margin:10px 0;">
+      <label style="display:flex;align-items:center;gap:8px;">{{ form.publish_now() }} Опубликовать сейчас</label>
+    </div>
+    {{ form.submit(class_="btn") }}
+  </form>
+</div>
+{% endblock %}

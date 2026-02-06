@@ -1,0 +1,292 @@
+{
+  "summary": {
+    "total_sections": 14,
+    "sections_ok": 14,
+    "sections_with_errors": 0,
+    "sections_with_warnings": 0,
+    "total_errors": 0,
+    "total_warnings": 0
+  },
+  "sections": [
+    {
+      "name": "Основные сведения",
+      "endpoint": "main",
+      "url": "/sveden/common",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 7,
+        "total_itemprop": 27,
+        "total_itemscope": 5,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Структура и органы управления образовательной организацией",
+      "endpoint": "structure",
+      "url": "/sveden/struct",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 4,
+        "total_itemprop": 25,
+        "total_itemscope": 5,
+        "total_tables": 4
+      }
+    },
+    {
+      "name": "Документы",
+      "endpoint": "documents",
+      "url": "/sveden/document",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 1,
+        "total_itemprop": 61,
+        "total_itemscope": 31,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Образование",
+      "endpoint": "education",
+      "url": "/sveden/education",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 1,
+        "total_itemprop": 36,
+        "total_itemscope": 19,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Образовательные стандарты и требования",
+      "endpoint": "standards",
+      "url": "/sveden/eduStandarts",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 0,
+        "total_itemprop": 11,
+        "total_itemscope": 4,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Руководство. Педагогический (научно-педагогический) состав",
+      "endpoint": "management",
+      "url": "/sveden/managers",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 1,
+        "total_itemprop": 16,
+        "total_itemscope": 5,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Педагогический состав",
+      "endpoint": "teachers",
+      "url": "/sveden/employees",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 0,
+        "total_itemprop": 14,
+        "total_itemscope": 3,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Материально-техническое обеспечение и оснащенность образовательного процесса",
+      "endpoint": "facilities",
+      "url": "/sveden/objects",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 0,
+        "total_itemprop": 15,
+        "total_itemscope": 7,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Стипендии и иные виды материальной поддержки",
+      "endpoint": "scholarships",
+      "url": "/sveden/grants",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 0,
+        "total_itemprop": 15,
+        "total_itemscope": 3,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Платные образовательные услуги",
+      "endpoint": "paid-services",
+      "url": "/sveden/paid_edu",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 0,
+        "total_itemprop": 18,
+        "total_itemscope": 4,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Финансово-хозяйственная деятельность",
+      "endpoint": "finance",
+      "url": "/sveden/budget",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 0,
+        "total_itemprop": 24,
+        "total_itemscope": 10,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Вакантные места для приема (перевода) обучающихся",
+      "endpoint": "vacancies",
+      "url": "/sveden/vacant",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 0,
+        "total_itemprop": 11,
+        "total_itemscope": 7,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Международное сотрудничество",
+      "endpoint": "international",
+      "url": "/sveden/inter",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 0,
+        "total_itemprop": 10,
+        "total_itemscope": 4,
+        "total_tables": 1
+      }
+    },
+    {
+      "name": "Организация питания в образовательной организации",
+      "endpoint": "food",
+      "url": "/sveden/catering",
+      "status": "ok",
+      "issues": {
+        "errors": [],
+        "warnings": []
+      },
+      "stats": {
+        "section_exists": true,
+        "main_itemprop_found": true,
+        "itemscope_correct": true,
+        "itemtype_correct": true,
+        "required_attrs_found": 0,
+        "total_itemprop": 15,
+        "total_itemscope": 8,
+        "total_tables": 0
+      }
+    }
+  ]
+}

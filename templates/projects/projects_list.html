@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Проекты — Юнона{% endblock %}
+{% block meta_description %}Проекты МБОУ ИТ Гимназия Юнона: IT-Лаборатория, Эко-школа, Медиацентр. Инновационные образовательные проекты и инициативы.{% endblock %}
+{% block meta_keywords %}проекты школы, IT-лаборатория, медиацентр, образовательные проекты, гимназия Юнона{% endblock %}
+{% block content %}
+{% if current_user.is_authenticated %}
+<div style="text-align: right; margin-bottom: 16px;">
+    <a href="/edit/projects" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+        ✏️ Редактировать
+    </a>
+</div>
+{% endif %}
+<h1>Проекты</h1>
+<div class="news">
+    {% for project in (page_content|default({})).get('projects', [{'title': 'IT-Лаборатория', 'description': 'Создание школьной лаборатории для изучения робототехники и программирования.', 'status': 'В процессе', 'id': 1}, {'title': 'Эко-школа', 'description': 'Внедрение системы раздельного сбора отходов и проведение экологических уроков.', 'status': 'Завершён', 'id': 2}, {'title': 'Медиацентр "Юнона"', 'description': 'Школьное телевидение и газета, развитие медиа-компетенций у учеников.', 'status': 'Активен', 'id': 3}]) %}
+    <div class="card item">
+        <h2>{{ project.get('title', 'Проект') }}</h2>
+        <p>{{ project.get('description', '') }} <br> <b>Статус:</b> {{ project.get('status', '') }}</p>
+        <a class="btn" href="/projects/{{ project.get('id', loop.index) }}">Подробнее</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} 

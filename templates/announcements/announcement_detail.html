@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} — Юнона{% endblock %}
+{% block meta_description %}{{ (item.content|striptags|truncate(160)) or item.title }} — МБОУ ИТ Гимназия Юнона{% endblock %}
+{% block og_title %}{{ item.title }}{% endblock %}
+{% block og_description %}{{ (item.content|striptags|truncate(200)) or item.title }}{% endblock %}
+{% block og_image %}{% if item.files %}{% set image_files = item.files | selectattr('kind', 'equalto', 'image') | list %}{% if image_files %}{{ request.url_root[:-1] }}{{ image_files[0].filename | announcement_file_url(item.id) }}{% endif %}{% endif %}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block content %}
+<div class="card item" style="border: none !important; outline: none !important; box-shadow: none !important;">
+    <h1>{{ item.title }}</h1>
+    <div class="date">{{ (item.publication_date or item.created_at).strftime('%d.%m.%Y') }} {% if item.is_featured %}· Главное{% endif %}</div>
+    {% if current_user.is_authenticated %}
+      <p>
+        <a class="btn" href="/announcements/{{ item.id }}/edit">Редактировать</a>
+        <form method="post" action="/announcements/{{ item.id }}/delete" style="display:inline-block;margin-left:8px;">
+          <button class="btn" type="submit" onclick="return confirm('Удалить объявление?')">Удалить</button>
+        </form>
+      </p>
+    {% endif %}
+    
+    {% if item.files %}
+        {% set image_files = item.files | selectattr('kind', 'equalto', 'image') | list %}
+        {% if image_files %}
+        <div class="image-gallery slider-container" style="margin: 20px 0;">
+            <div class="slider-wrapper">
+                {% for img in image_files %}
+                <div class="slider-slide">
+                    <img class="js-previewable" src="{{ img.filename | announcement_file_url(item.id) }}" data-full="{{ img.filename | announcement_file_url(item.id) }}" alt="{{ item.title }}">
+                </div>
+                {% endfor %}
+            </div>
+            {% if image_files | length > 1 %}
+            <button class="slider-btn slider-btn--prev gallery-prev">‹</button>
+            <button class="slider-btn slider-btn--next gallery-next">›</button>
+            <div class="slider-dots">
+                {% for img in image_files %}
+                <button class="slider-dot gallery-dot" data-slide="{{ loop.index0 }}"></button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% endif %}
+    
+    <div class="content">{{ item.content|safe }}</div>
+    
+    {% if doc_files %}
+        <div class="files">
+            <h3>Файлы:</h3>
+            <ul>
+            {% for doc in doc_files %}
+                <li><a href="{{ doc.url }}" target="_blank" download>{{ doc.filename }}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %} 

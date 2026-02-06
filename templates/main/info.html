@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block title %}Информация — Юнона{% endblock %}
+{% block meta_description %}Полезная информация для учащихся и родителей МБОУ ИТ Гимназия Юнона: расписание, документы, полезные ссылки, контакты.{% endblock %}
+{% block meta_keywords %}информация для родителей, полезные ссылки, документы школы, расписание, гимназия Юнона{% endblock %}
+{% block content %}
+{% if current_user.is_authenticated %}
+<div style="text-align: right; margin-bottom: 16px;">
+    <a href="/edit/info" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+        ✏️ Редактировать
+    </a>
+</div>
+{% endif %}
+<style>
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin: 32px 0;
+}
+
+.info-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    border-color: #3b82f6;
+}
+
+.info-card h3 {
+    color: #1e293b;
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-card li {
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.info-card li:last-child {
+    border-bottom: none;
+}
+
+.info-card a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-card a:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.quick-links {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 20px;
+    margin: 32px 0;
+    text-align: center;
+}
+
+.quick-links h2 {
+    color: white;
+    margin-bottom: 20px;
+}
+
+.quick-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.quick-link-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.quick-link-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-links-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<h1>Информация</h1>
+
+<div class="quick-links">
+    <h2>📚 Быстрые ссылки</h2>
+    <div class="quick-links-grid">
+        <a href="/sveden/common" class="quick-link-btn">Основные сведения</a>
+        <a href="/news" class="quick-link-btn">Новости</a>
+        <a href="/announcements" class="quick-link-btn">Объявления</a>
+        <a href="/contacts" class="quick-link-btn">Контакты</a>
+        <a href="/sveden/education" class="quick-link-btn">Образование</a>
+        <a href="/sveden/managers" class="quick-link-btn">Руководство</a>
+    </div>
+</div>
+
+<div class="info-grid">
+    <div class="card item info-card">
+        <h3>📋 Для родителей</h3>
+        <ul>
+            <li><a href="/sveden/common">Основные сведения об организации</a></li>
+            <li><a href="/sveden/education">Образовательные программы</a></li>
+            <li><a href="/sveden/paid_edu">Платные образовательные услуги</a></li>
+            <li><a href="/sveden/catering">Организация питания</a></li>
+            <li><a href="/sveden/grants">Стипендии и меры поддержки</a></li>
+            <li><a href="/sveden/vacant">Вакантные места</a></li>
+        </ul>
+    </div>
+
+    <div class="card item info-card">
+        <h3>🎓 Для учащихся</h3>
+        <ul>
+            <li><a href="/sveden/education">Образовательные программы</a></li>
+            <li><a href="/sveden/eduStandarts">Образовательные стандарты</a></li>
+            <li><a href="/projects">Школьные проекты</a></li>
+            <li><a href="/albums">Фотоальбомы</a></li>
+            <li><a href="/news">Новости школы</a></li>
+            <li><a href="/sveden/grants">Стипендии и поддержка</a></li>
+        </ul>
+    </div>
+
+    <div class="card item info-card">
+        <h3>📄 Документы</h3>
+        <ul>
+            <li><a href="/sveden/document">Документы организации</a></li>
+            <li><a href="/sveden/struct">Структура и органы управления</a></li>
+            <li><a href="/sveden/budget">Финансово-хозяйственная деятельность</a></li>
+            <li><a href="/sveden/objects">Материально-техническое обеспечение</a></li>
+            <li><a href="/sveden/inter">Международное сотрудничество</a></li>
+        </ul>
+    </div>
+
+    <div class="card item info-card">
+        <h3>👥 Коллектив</h3>
+        <ul>
+            <li><a href="/sveden/managers">Руководство</a></li>
+            <li><a href="/sveden/employees">Педагогический состав</a></li>
+            <li><a href="/about">О школе</a></li>
+            <li><a href="/contacts">Контакты</a></li>
+        </ul>
+    </div>
+
+    <div class="card item info-card">
+        <h3>🔗 Полезные ресурсы</h3>
+        <ul>
+            <li><a href="https://edu.gov.ru" target="_blank" rel="noopener">Министерство просвещения РФ</a></li>
+            <li><a href="https://obrnadzor.gov.ru" target="_blank" rel="noopener">Рособрнадзор</a></li>
+            <li><a href="https://fipi.ru" target="_blank" rel="noopener">ФИПИ - Федеральный институт педагогических измерений</a></li>
+            <li><a href="https://edu.ru" target="_blank" rel="noopener">Российское образование</a></li>
+        </ul>
+    </div>
+
+    <div class="card item info-card">
+        <h3>📞 Контакты</h3>
+        <ul>
+            <li><strong>Адрес:</strong><br>347389, Ростовская обл, Волгодонск, ул. К.Маркса, 64А</li>
+            <li><strong>Телефон:</strong><br><a href="tel:+78639279776">8 (8639) 27-97-76</a></li>
+            <li><strong>E-mail:</strong><br><a href="mailto:junona@rostovschool.ru">junona@rostovschool.ru</a></li>
+            <li><strong>Время работы:</strong><br>Пн-Пт 8:00–17:00</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card item" style="max-width: 900px; margin: 32px auto; text-align: center; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 2px solid #22c55e;">
+    <h2 style="color: #166534; margin-bottom: 16px;">💡 Нужна помощь?</h2>
+    <p style="color: #15803d; margin-bottom: 20px; font-size: 1.1rem;">
+        Если у вас возникли вопросы или нужна дополнительная информация, свяжитесь с нами удобным способом.
+    </p>
+    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a href="/contacts" class="btn" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; padding: 12px 24px;">
+            📞 Связаться с нами
+        </a>
+        <a href="/sitemap" class="btn" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 12px 24px;">
+            🗺️ Карта сайта
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+

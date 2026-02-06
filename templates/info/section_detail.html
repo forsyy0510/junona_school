@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ section.title }} — Юнона{% endblock %}
+{% block meta_description %}{{ (section.content|striptags|truncate(160)) or section.title }} — МБОУ ИТ Гимназия Юнона{% endblock %}
+{% block content %}
+<div class="card item">
+    <h1>{{ section.title }}</h1>
+    <div class="content">{{ section.content|safe }}</div>
+    {% if section.files %}
+        <div class="files">
+            <h3>Файлы:</h3>
+            <ul>
+            {% for f in section.files %}
+                <li><a href="/uploads/{{ f.filename }}" target="_blank">{{ f.filename }}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    {% if section.subsections %}
+        <div class="subsections">
+            <h3>Подразделы:</h3>
+            <ul>
+            {% for sub in section.subsections %}
+                <li><a href="/sections/{{ sub.id }}">{{ sub.title }}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

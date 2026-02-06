@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% block title %}Главная — Юнона{% endblock %}
+{% block meta_description %}МБОУ ИТ Гимназия Юнона - современная школа с углублённым изучением IT и естественно-научных дисциплин при ВИТИ НИЯУ МИФИ г. Волгодонска. Инновационное образование, IT-технологии, научные исследования.{% endblock %}
+{% block meta_keywords %}школа Юнона, IT гимназия Волгодонск, образование, информационные технологии, ВИТИ НИЯУ МИФИ, инновационная школа{% endblock %}
+{% block content %}
+{% if current_user.is_authenticated %}
+<div style="text-align: right; margin-bottom: 16px; display: flex; gap: 12px; justify-content: flex-end;">
+    <a href="/edit/index" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+        ✏️ Редактировать страницу
+    </a>
+    <a href="/edit/events" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+        📅 Редактировать события
+    </a>
+</div>
+{% endif %}
+<style>
+/* Адаптивность для главной страницы */
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    
+    .school-info-expanded .card {
+        margin: 0 10px 10px 10px !important;
+        max-width: none !important;
+    }
+    
+    .school-info-expanded .card > div {
+        padding: 16px !important;
+    }
+    
+    .school-info-expanded h2 {
+        font-size: 1.4rem !important;
+    }
+    
+    .school-info-expanded h3 {
+        font-size: 1.1rem !important;
+    }
+    
+    .school-info-expanded .btn {
+        display: block !important;
+        margin: 10px 0 !important;
+        text-align: center !important;
+    }
+    
+    .announcements-scroll {
+        padding: 0 10px !important;
+    }
+    
+    .announcements-scroll .card {
+        min-width: 240px !important;
+        width: 240px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .school-info-expanded .card > div {
+        padding: 15px !important;
+    }
+    
+    .school-info-expanded h1 {
+        font-size: 1.8rem !important;
+    }
+    
+    .school-info-expanded h2 {
+        font-size: 1.2rem !important;
+    }
+    
+    .announcements-scroll .card {
+        min-width: 200px !important;
+        width: 200px !important;
+    }
+}
+</style>
+<div class="main-layout" style="display: flex; gap: 12px; align-items: flex-start;">
+  <main class="main-content" style="flex:1; min-width:0;">
+    {% set _pc = page_content|default({}) %}
+    {% set header_title = _pc.get('header_title') or 'МБОУ "ИТ Гимназия "Юнона"' %}
+    {% set header_subtitle = _pc.get('header_subtitle') or 'при ВИТИ НИЯУ МИФИ г. Волгодонска' %}
+    {% set _header_tags = _pc.get('header_tags', []) %}
+    {% set _slider_images = _pc.get('slider_images', []) %}
+    {% set _achievements = _pc.get('achievements', []) %}
+    {% set _it_infra = _pc.get('it_infrastructure', []) %}
+    {% set _teachers = _pc.get('teachers', []) %}
+    {% set _partnership = _pc.get('partnership', []) %}
+    {% set _directions = _pc.get('directions', []) %}
+    {% set _events = _pc.get('events', []) %}
+    {% set _achievements_list = _pc.get('achievements_list', []) %}
+    {% set _block_order = _pc.get('block_order', ['header', 'slider', 'announcements', 'news', 'school_info', 'directions', 'events_achievements']) %}
+
+    {% for block_id in _block_order %}
+      {% if block_id == 'header' %}
+    <div class="main-block" style="text-align: center; margin-top: 0; margin-bottom: 12px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; color: white; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
+        <h1 style="margin: 0 0 12px 0; font-size: 1.5rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">{{ header_title }}</h1>
+        <p style="margin: 0; font-size: 1rem; opacity: 0.9; font-weight: 500;">{{ header_subtitle }}</p>
+        {% if _header_tags %}
+        <div style="margin-top: 12px; font-size: 0.9rem; opacity: 0.8;">{{ _header_tags | join(' • ') }}</div>
+        {% endif %}
+    </div>
+      {% elif block_id == 'slider' %}
+    <div class="hero-row main-block" style="display: flex; gap: 12px; align-items: stretch; margin-top: 8px; margin-bottom: 12px;">
+      <div class="hero-slider" style="flex: 2; min-width: 0; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.12); aspect-ratio: 2/1;">
+        {% if _slider_images %}
+        <div class="home-slider-wrap" style="height: 100%; position: relative;">
+            <div class="home-slider" style="position: absolute; inset: 0; background: #e2e8f0;">
+                {% for url in _slider_images %}
+                <div class="home-slider-item" style="position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease;" data-index="{{ loop.index0 }}">
+                    <img src="{{ url }}" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <script>
+        (function() {
+            var wrap = document.querySelector('.hero-row .home-slider-wrap');
+            if (!wrap) return;
+            var items = wrap.querySelectorAll('.home-slider-item');
+            if (items.length === 0) return;
+            items[0].style.opacity = '1';
+            var idx = 0;
+            setInterval(function() {
+                items[idx].style.opacity = '0';
+                idx = (idx + 1) % items.length;
+                items[idx].style.opacity = '1';
+            }, 5000);
+        })();
+        </script>
+        {% else %}
+        <div class="block-placeholder" style="height: 100%; min-height: 240px; padding: 24px; background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 16px; color: #64748b; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+            <p style="margin: 0 0 8px 0; font-size: 1rem;">Слайдер</p>
+            <p style="margin: 0; font-size: 0.85rem;">Добавьте фото в «Редактировать главную».</p>
+        </div>
+        {% endif %}
+      </div>
+      <div class="hero-announcements" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+        <h2 style="margin: 0 0 8px 0; font-size: 1.2rem; color: #1e293b;">Объявления</h2>
+        {% if announcements %}
+        <div id="heroAnnouncementsCarousel" class="hero-announcements-carousel" style="flex: 1; position: relative; overflow: hidden; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-height: 200px;">
+            {% if current_user.is_authenticated %}
+            <a href="/announcements/new" class="hero-ann-add-btn" style="position: absolute; top: 10px; right: 10px; z-index: 6; padding: 6px 12px; font-size: 0.85rem; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">Добавить объявление</a>
+            {% endif %}
+            <button type="button" class="hero-ann-btn hero-ann-btn--prev" aria-label="Предыдущее">‹</button>
+            <button type="button" class="hero-ann-btn hero-ann-btn--next" aria-label="Следующее">›</button>
+            <div class="hero-ann-track" style="position: absolute; left: 0; right: 0; top: 0; height: {{ announcements|length * 100 }}%; display: flex; flex-direction: column; transition: transform 0.4s ease;">
+                {% for a in announcements %}
+                <a href="/announcements/{{ a.id }}" class="hero-ann-card" style="flex: 0 0 {{ 100 / announcements|length }}%; padding: 16px; box-sizing: border-box; display: block; text-decoration: none; color: inherit; overflow-y: auto;">
+                    {% set image_files = a.files | selectattr('kind', 'equalto', 'image') | list %}
+                    {% if image_files %}
+                    <img src="{{ (image_files[0]).filename | announcement_file_url(a.id) }}" alt="{{ a.title }}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
+                    {% else %}
+                    <div style="width: 100%; height: 80px; background: #e2e8f0; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.9rem;">Нет фото</div>
+                    {% endif %}
+                    <div style="font-weight: 600; font-size: 1rem; color: #1e293b; margin-bottom: 4px;">{{ a.title | truncate(50, True, '...') }} {% if a.is_featured %}⭐{% endif %}</div>
+                    <div style="font-size: 0.8rem; color: #64748b;">{{ (a.publication_date or a.created_at).strftime('%d.%m.%Y') }}</div>
+                    <div style="font-size: 0.85rem; color: #475569; margin-top: 6px;">{{ a.content[:80] }}{% if a.content|length > 80 %}...{% endif %}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <script>
+        (function() {
+            var car = document.getElementById('heroAnnouncementsCarousel');
+            if (!car) return;
+            var track = car.querySelector('.hero-ann-track');
+            var cards = car.querySelectorAll('.hero-ann-card');
+            var n = cards.length;
+            if (n === 0) return;
+            var idx = 0;
+            function go() { track.style.transform = 'translateY(-' + (idx * (100 / n)) + '%)'; }
+            var prevBtn = car.querySelector('.hero-ann-btn--prev');
+            var nextBtn = car.querySelector('.hero-ann-btn--next');
+            if (prevBtn) prevBtn.onclick = function() { idx = (idx - 1 + n) % n; go(); };
+            if (nextBtn) nextBtn.onclick = function() { idx = (idx + 1) % n; go(); };
+            go();
+            if (n > 1) setInterval(function() { idx = (idx + 1) % n; go(); }, 6000);
+        })();
+        </script>
+        {% else %}
+        <div class="block-placeholder" style="flex: 1; min-height: 200px; padding: 20px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; color: #64748b; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+            <p style="margin: 0 0 6px 0; font-size: 0.95rem;">Здесь будут объявления.</p>
+            <p style="margin: 0 0 12px 0; font-size: 0.85rem;">Пример: «Родительское собрание», «Запись на кружки».</p>
+            {% if current_user.is_authenticated %}
+            <a class="btn" href="/announcements/new" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">Добавить объявление</a>
+            {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+      {% elif block_id == 'announcements' %}
+      {% elif block_id == 'news' %}
+    <div class="news main-block" style="margin-top: 8px; margin-bottom: 12px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <h2 style="color: #1e293b; margin: 0; font-size: 1.6rem;">Новости</h2>
+        </div>
+        {% if news %}
+        <div id="homeNewsCarousel" class="home-news-carousel" style="position: relative;">
+            <button type="button" class="home-news-btn home-news-btn--prev" aria-label="Предыдущие">‹</button>
+            <button type="button" class="home-news-btn home-news-btn--next" aria-label="Следующие">›</button>
+            <div class="home-news-row" style="display: flex; gap: 12px; overflow-x: auto; scroll-behavior: smooth; padding: 4px 0 12px 0; scrollbar-width: thin;">
+                {% if current_user.is_authenticated %}
+                <a href="/news/new" class="home-news-add-tile" style="flex: 0 0 calc(33.333% - 8px); min-width: 260px; display: flex; align-items: center; justify-content: center; text-decoration: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-weight: 600; font-size: 1.1rem; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(16,185,129,0.4)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';">
+                    Добавить новость
+                </a>
+                {% endif %}
+                {% for n in news[:8] %}
+                <a href="/news/{{ n.id }}" class="home-news-tile home-news-tile--row" style="flex: 0 0 calc(33.333% - 8px); min-width: 260px; display: block; text-decoration: none; color: inherit; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';">
+                    <div class="home-news-tile-img" style="aspect-ratio: 16/10; background: #e2e8f0; overflow: hidden;">
+                        {% set image_files = n.files | selectattr('kind', 'equalto', 'image') | list %}
+                        {% if image_files %}
+                        <img src="{{ (image_files[0]).filename | news_file_url(n.id) }}" alt="{{ n.title }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        {% else %}
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8;">Нет фото</div>
+                        {% endif %}
+                    </div>
+                    <div style="padding: 12px 14px;">
+                        <div style="font-weight: 600; font-size: 1rem; color: #1e293b; line-height: 1.35;">{{ n.title | truncate(50, True, '...') }} {% if n.is_featured %}⭐{% endif %}</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">{{ (n.publication_date or n.created_at).strftime('%d.%m.%Y') }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+                <a href="/news" class="home-news-all-card" style="flex: 0 0 calc(33.333% - 8px); min-width: 260px; display: flex; align-items: center; justify-content: center; text-decoration: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-weight: 600; font-size: 1.2rem; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(37,99,235,0.4)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';">
+                    Все новости
+                </a>
+            </div>
+        </div>
+        <script>
+        (function() {
+            var car = document.getElementById('homeNewsCarousel');
+            if (!car) return;
+            var row = car.querySelector('.home-news-row');
+            if (!row || row.children.length === 0) return;
+            var step = row.offsetWidth * 0.34;
+            car.querySelector('.home-news-btn--prev').onclick = function() { row.scrollBy({ left: -step, behavior: 'smooth' }); };
+            car.querySelector('.home-news-btn--next').onclick = function() { row.scrollBy({ left: step, behavior: 'smooth' }); };
+        })();
+        </script>
+        {% else %}
+        <div class="block-placeholder" style="padding: 24px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; color: #64748b; text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 1rem;">Здесь будут отображаться новости.</p>
+            <p style="margin: 0; font-size: 0.9rem;">Пример: «Открытие нового учебного года», «Итоги олимпиады по программированию».</p>
+        </div>
+        {% endif %}
+    </div>
+      {% elif block_id == 'school_info' %}
+    <div class="main-block" style="margin-top: 8px; margin-bottom: 12px;">
+        <div class="card item" style="max-width: 100%; margin: 0 auto; text-align: left; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border: 2px solid #e2e8f0;">
+            <div style="padding: 20px;">
+                {% if _achievements or _it_infra or _teachers or _partnership %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+                    {% if _achievements %}
+                    <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid #3b82f6;">
+                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">🏆 Достижения</h3>
+                        <ul style="margin: 0; padding-left: 20px; color: #4b5563;">{% for item in _achievements %}<li>{{ item }}</li>{% endfor %}</ul>
+                    </div>
+                    {% endif %}
+                    {% if _it_infra %}
+                    <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid #10b981;">
+                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">💻 IT-Инфраструктура</h3>
+                        <ul style="margin: 0; padding-left: 20px; color: #4b5563;">{% for item in _it_infra %}<li>{{ item }}</li>{% endfor %}</ul>
+                    </div>
+                    {% endif %}
+                    {% if _teachers %}
+                    <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid #f59e0b;">
+                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">👨‍🏫 Педагоги</h3>
+                        <ul style="margin: 0; padding-left: 20px; color: #4b5563;">{% for item in _teachers %}<li>{{ item }}</li>{% endfor %}</ul>
+                    </div>
+                    {% endif %}
+                    {% if _partnership %}
+                    <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid #8b5cf6;">
+                        <h3 style="color: #1e293b; margin-bottom: 10px; font-size: 1.2rem;">🤝 Партнёрство</h3>
+                        <ul style="margin: 0; padding-left: 20px; color: #4b5563;">{% for item in _partnership %}<li>{{ item }}</li>{% endfor %}</ul>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="block-placeholder" style="padding: 24px; background: #fff; border: 2px dashed #cbd5e1; border-radius: 12px; color: #64748b; text-align: center;">
+                    <p style="margin: 0 0 8px 0; font-size: 1rem;">Информация о школе.</p>
+                    <p style="margin: 0; font-size: 0.9rem;">Пример: достижения, IT-инфраструктура, педагоги, партнёрство. Заполните блок в разделе «Редактировать главную».</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+      {% elif block_id == 'directions' %}
+    <div class="main-block" style="margin-top: 8px; margin-bottom: 12px;">
+        <div class="card item" style="max-width: 100%; margin: 0 auto; text-align: left;">
+            <div style="padding: 20px;">
+                <h2 style="color: #1e293b; margin-bottom: 14px; font-size: 1.6rem; text-align: center;">🎯 Направления обучения</h2>
+                {% if _directions %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
+                    {% for d in _directions %}
+                    <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 16px; border-radius: 12px; border: 2px solid #cbd5e1;">
+                        <h3 style="color: #1e293b; margin-bottom: 10px;">{{ d.get('title', '') }}</h3>
+                        <p style="color: #475569; margin: 0; font-size: 0.95rem;">{{ d.get('desc', '') }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="block-placeholder" style="padding: 24px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; color: #64748b; text-align: center;">
+                    <p style="margin: 0 0 8px 0; font-size: 1rem;">Здесь будут направления обучения.</p>
+                    <p style="margin: 0; font-size: 0.9rem;">Пример: IT-направление, естественные науки, гуманитарные науки.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+      {% elif block_id == 'events_achievements' %}
+    <div class="main-block" style="margin-top: 8px; margin-bottom: 12px;">
+        <div class="card item" style="max-width: 100%; margin: 0 auto; text-align: left;">
+            <div style="padding: 20px;">
+                <h2 style="color: #1e293b; margin-bottom: 14px; font-size: 1.6rem; text-align: center;">🌟 Важные события и достижения</h2>
+                {% if _events or _achievements_list %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px;">
+                    {% if _events %}
+                    <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); padding: 16px; border-radius: 12px; border: 2px solid #ef4444;">
+                        <h3 style="color: #dc2626; margin-bottom: 12px; font-size: 1.2rem;">📅 Текущие события</h3>
+                        <ul style="margin: 0; padding-left: 20px; color: #7f1d1d;">{% for event in _events %}<li style="margin-bottom: 8px;"><strong>{{ event.get('date', '') }}:</strong> {{ event.get('text', '') }}</li>{% endfor %}</ul>
+                    </div>
+                    {% endif %}
+                    {% if _achievements_list %}
+                    <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 16px; border-radius: 12px; border: 2px solid #22c55e;">
+                        <h3 style="color: #16a34a; margin-bottom: 12px; font-size: 1.2rem;">🏆 Последние достижения</h3>
+                        <ul style="margin: 0; padding-left: 20px; color: #166534;">{% for item in _achievements_list %}<li style="margin-bottom: 8px;">{{ item }}</li>{% endfor %}</ul>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="block-placeholder" style="padding: 24px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; color: #64748b; text-align: center;">
+                    <p style="margin: 0 0 8px 0; font-size: 1rem;">Здесь будут важные события и достижения.</p>
+                    <p style="margin: 0; font-size: 0.9rem;">Пример: даты мероприятий, олимпиады, награды. Заполните в разделе «Редактировать главную».</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+      {% endif %}
+    {% endfor %}
+  </main>
+</div>
+{% endblock %} 

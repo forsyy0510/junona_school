@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Редактирование страницы "Информация" — Юнона{% endblock %}
+{% block content %}
+<div class="edit-container" style="max-width: 800px; margin: 0 auto; padding: 24px;">
+    <div class="edit-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 2px solid #e5e7eb;">
+        <h1>✏️ Редактирование страницы "Информация"</h1>
+        <a href="/info" style="background: #6b7280; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none;">← Назад</a>
+    </div>
+    <div style="background: white; padding: 32px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+        <p>Страница "Информация" использует динамический контент из базы данных разделов.</p>
+        <p>Для редактирования используйте мастер заполнения или редактируйте отдельные разделы.</p>
+        <a href="/info" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; display: inline-block; margin-top: 20px;">Вернуться к странице</a>
+    </div>
+</div>
+{% endblock %}
+

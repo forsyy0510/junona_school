@@ -1,0 +1,581 @@
+{% extends "base.html" %}
+{% block title %}Редактирование главной страницы — Юнона{% endblock %}
+{% block content %}
+<style>
+.edit-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.edit-form {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.form-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.form-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #1e293b;
+    font-size: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.list-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: center;
+}
+
+.list-item input {
+    flex: 1;
+}
+
+.btn-remove {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-remove:hover {
+    background: #dc2626;
+}
+
+.btn-add {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+.btn-add:hover {
+    background: #059669;
+}
+
+.btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-save:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.btn-cancel {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-cancel:hover {
+    background: #4b5563;
+}
+
+.block-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.block-card-header h2 {
+    margin: 0;
+}
+
+.btn-move {
+    background: #e5e7eb;
+    border: 1px solid #d1d5db;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.btn-move:hover {
+    background: #d1d5db;
+}
+
+.btn-move + .btn-move {
+    margin-left: 4px;
+}
+
+.block-placeholder {
+    color: #6b7280;
+    padding: 12px 0;
+}
+
+.block-placeholder a {
+    color: #3b82f6;
+}
+</style>
+
+<div class="edit-container">
+    <div class="edit-header">
+        <h1>✏️ Редактирование главной страницы</h1>
+        <a href="/" class="btn-cancel">← Назад</a>
+    </div>
+
+    {% set block_order = page_content.get('block_order', ['header', 'slider', 'announcements', 'news', 'school_info', 'directions', 'events_achievements']) %}
+    {% set block_titles = {'header': '🏫 Блок названия организации', 'slider': '🖼️ Слайдер на главной', 'news': '📰 Новости', 'school_info': '📋 Достижения, IT-инфраструктура, Педагоги, Партнёрство', 'directions': '🎯 Направления обучения', 'events_achievements': '🌟 События и достижения', 'announcements': '📢 Объявления'} %}
+
+    <form class="edit-form" id="editForm" method="POST">
+        <input type="hidden" name="block_order" id="blockOrderInput" value="{{ page_content.get('block_order_json', '[]') }}">
+        <div id="blocks-container">
+        {% for block_id in block_order %}
+        <div class="form-section block-card" data-block-id="{{ block_id }}">
+            <div class="block-card-header">
+                <h2>{{ block_titles.get(block_id, block_id) }}</h2>
+                <div>
+                    <button type="button" class="btn-move" onclick="moveBlock('{{ block_id }}', -1)" title="Вверх">↑</button>
+                    <button type="button" class="btn-move" onclick="moveBlock('{{ block_id }}', 1)" title="Вниз">↓</button>
+                </div>
+            </div>
+
+            {% if block_id == 'header' %}
+            <p style="color: #6b7280; margin: 0 0 16px 0; font-size: 0.95rem;">Текст в шапке главной страницы (градиентный блок).</p>
+            <div class="form-group">
+                <label>Название организации:</label>
+                <input type="text" name="header_title" value="{{ page_content.get('header_title', '') }}" placeholder="МБОУ «ИТ Гимназия «Юнона»">
+            </div>
+            <div class="form-group">
+                <label>Подзаголовок:</label>
+                <input type="text" name="header_subtitle" value="{{ page_content.get('header_subtitle', '') }}" placeholder="при ВИТИ НИЯУ МИФИ г. Волгодонска">
+            </div>
+            <div class="form-group">
+                <label>Теги (отображаются под подзаголовком, через •):</label>
+                <div id="header-tags-list">
+                    {% for tag in page_content.get('header_tags', []) %}
+                    <div class="list-item">
+                        <input type="text" name="header_tags[]" value="{{ tag }}" placeholder="Например: 🚀 Инновационное образование">
+                        <button type="button" class="btn-remove" onclick="removeListItem(this)">Удалить</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn-add" onclick="addListItem('header-tags-list', 'header_tags[]')">+ Добавить тег</button>
+            </div>
+
+            {% elif block_id == 'news' %}
+            <p class="block-placeholder">Содержимое блока добавляется в разделе <a href="/news">Новости</a>. На главной отображаются до 4 последних новостей.</p>
+
+            {% elif block_id == 'slider' %}
+            <input type="hidden" name="slider_images" id="sliderImagesInput" value="{{ page_content.get('slider_images_json', '[]') }}">
+            <p style="color: #6b7280; margin: 0 0 12px 0; font-size: 0.95rem;">Фото для автоматического слайдера на главной. Порядок: сверху вниз.</p>
+            <div id="slider-images-list" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+                {% for url in page_content.get('slider_images', []) %}
+                <div class="slider-image-item" style="position: relative; width: 120px;">
+                    <img src="{{ url }}" alt="" style="width: 100%; height: 80px; object-fit: cover; border-radius: 8px; display: block;">
+                    <button type="button" class="btn-remove" onclick="removeSliderImage(this)" style="position: absolute; top: 4px; right: 4px; padding: 4px 8px; font-size: 0.85rem;">×</button>
+                </div>
+                {% endfor %}
+            </div>
+            <div>
+                <label class="btn-add" style="display: inline-block; cursor: pointer; margin-bottom: 0;">+ Добавить фото
+                    <input type="file" id="sliderFileInput" accept="image/jpeg,image/png,image/gif,image/webp" multiple style="display: none;">
+                </label>
+            </div>
+
+            {% elif block_id == 'school_info' %}
+            <div class="form-group">
+                <label>🏆 Достижения</label>
+                <div id="achievements-list">
+                    {% for item in page_content.get('achievements', []) %}
+                    <div class="list-item">
+                        <input type="text" name="achievements[]" value="{{ item }}" placeholder="Достижение">
+                        <button type="button" class="btn-remove" onclick="removeListItem(this)">Удалить</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn-add" onclick="addListItem('achievements-list', 'achievements[]')">+ Добавить достижение</button>
+            </div>
+            <div class="form-group">
+                <label>💻 IT-Инфраструктура</label>
+                <div id="it-infrastructure-list">
+                    {% for item in page_content.get('it_infrastructure', []) %}
+                    <div class="list-item">
+                        <input type="text" name="it_infrastructure[]" value="{{ item }}" placeholder="Элемент инфраструктуры">
+                        <button type="button" class="btn-remove" onclick="removeListItem(this)">Удалить</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn-add" onclick="addListItem('it-infrastructure-list', 'it_infrastructure[]')">+ Добавить элемент</button>
+            </div>
+            <div class="form-group">
+                <label>👨‍🏫 Педагоги</label>
+                <div id="teachers-list">
+                    {% for item in page_content.get('teachers', []) %}
+                    <div class="list-item">
+                        <input type="text" name="teachers[]" value="{{ item }}" placeholder="Пункт о педагогах">
+                        <button type="button" class="btn-remove" onclick="removeListItem(this)">Удалить</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn-add" onclick="addListItem('teachers-list', 'teachers[]')">+ Добавить пункт</button>
+            </div>
+            <div class="form-group">
+                <label>🤝 Партнёрство</label>
+                <div id="partnership-list">
+                    {% for item in page_content.get('partnership', []) %}
+                    <div class="list-item">
+                        <input type="text" name="partnership[]" value="{{ item }}" placeholder="Партнёр">
+                        <button type="button" class="btn-remove" onclick="removeListItem(this)">Удалить</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn-add" onclick="addListItem('partnership-list', 'partnership[]')">+ Добавить партнёра</button>
+            </div>
+
+            {% elif block_id == 'directions' %}
+            <div id="directions-list">
+                {% for d in page_content.get('directions', []) %}
+                <div class="list-item" style="flex-direction: column; align-items: stretch; gap: 8px; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 12px;">
+                    <div style="display: flex; gap: 12px;">
+                        <input type="text" name="directions[][title]" value="{{ d.get('title', '') }}" placeholder="Название направления" style="flex: 1;">
+                        <input type="text" name="directions[][desc]" value="{{ d.get('desc', '') }}" placeholder="Описание" style="flex: 2;">
+                        <button type="button" class="btn-remove" onclick="removeListItem(this.parentElement.parentElement)">Удалить</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" class="btn-add" onclick="addDirectionItem()">+ Добавить направление</button>
+
+            {% elif block_id == 'events_achievements' %}
+            <div class="form-group">
+                <label>📅 Ближайшие события</label>
+                <div id="events-list">
+                    {% for event in page_content.get('events', []) %}
+                    <div class="list-item" style="flex-direction: column; align-items: stretch; gap: 8px; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        <div style="display: flex; gap: 12px;">
+                            <input type="text" name="events[][date]" value="{{ event.get('date', '') }}" placeholder="Дата (например: Сентябрь 2024)" style="flex: 1;">
+                            <input type="text" name="events[][text]" value="{{ event.get('text', '') }}" placeholder="Описание события" style="flex: 2;">
+                            <button type="button" class="btn-remove" onclick="removeListItem(this.parentElement.parentElement)">Удалить</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn-add" onclick="addEventItem()">+ Добавить событие</button>
+            </div>
+            <div class="form-group">
+                <label>🌟 Последние достижения</label>
+                <div id="achievements-list-items">
+                    {% for item in page_content.get('achievements_list', []) %}
+                    <div class="list-item">
+                        <input type="text" name="achievements_list[]" value="{{ item }}" placeholder="Достижение">
+                        <button type="button" class="btn-remove" onclick="removeListItem(this)">Удалить</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn-add" onclick="addListItem('achievements-list-items', 'achievements_list[]')">+ Добавить достижение</button>
+            </div>
+
+            {% elif block_id == 'announcements' %}
+            <p class="block-placeholder">Содержимое блока добавляется в разделе <a href="/announcements">Объявления</a>.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn-save">💾 Сохранить</button>
+            <a href="/" class="btn-cancel">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function addListItem(containerId, name) {
+    const container = document.getElementById(containerId);
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.innerHTML = `
+        <input type="text" name="${name}" placeholder="Введите текст">
+        <button type="button" class="btn-remove" onclick="removeListItem(this)">Удалить</button>
+    `;
+    container.appendChild(div);
+}
+
+function addEventItem() {
+    const container = document.getElementById('events-list');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.style.cssText = 'flex-direction: column; align-items: stretch; gap: 8px; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;';
+    div.innerHTML = `
+        <div style="display: flex; gap: 12px;">
+            <input type="text" name="events[][date]" placeholder="Дата (например: Сентябрь 2024)" style="flex: 1;">
+            <input type="text" name="events[][text]" placeholder="Описание события" style="flex: 2;">
+            <button type="button" class="btn-remove" onclick="removeListItem(this.parentElement.parentElement)">Удалить</button>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function addDirectionItem() {
+    const container = document.getElementById('directions-list');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.style.cssText = 'flex-direction: column; align-items: stretch; gap: 8px; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 12px;';
+    div.innerHTML = `
+        <div style="display: flex; gap: 12px;">
+            <input type="text" name="directions[][title]" placeholder="Название направления" style="flex: 1;">
+            <input type="text" name="directions[][desc]" placeholder="Описание" style="flex: 2;">
+            <button type="button" class="btn-remove" onclick="removeListItem(this.parentElement.parentElement)">Удалить</button>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function getSliderUrls() {
+    var input = document.getElementById('sliderImagesInput');
+    if (!input) return [];
+    try {
+        var v = JSON.parse(input.value);
+        return Array.isArray(v) ? v : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function setSliderUrls(urls) {
+    var input = document.getElementById('sliderImagesInput');
+    if (input) input.value = JSON.stringify(urls);
+}
+
+function removeSliderImage(btn) {
+    var item = btn.closest('.slider-image-item');
+    if (!item) return;
+    var list = document.getElementById('slider-images-list');
+    if (!list) return;
+    var items = list.querySelectorAll('.slider-image-item');
+    var idx = Array.prototype.indexOf.call(items, item);
+    if (idx === -1) return;
+    var urls = getSliderUrls();
+    urls.splice(idx, 1);
+    setSliderUrls(urls);
+    item.remove();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var sliderInput = document.getElementById('sliderFileInput');
+    if (sliderInput) {
+        sliderInput.addEventListener('change', function() {
+            var files = this.files;
+            if (!files || files.length === 0) return;
+            var formData = new FormData();
+            for (var i = 0; i < files.length; i++) formData.append('files', files[i]);
+            fetch('/edit/index/slider-upload', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(function(r) { return r.json(); }).then(function(data) {
+                if (data.success && data.urls && data.urls.length) {
+                    var urls = getSliderUrls();
+                    data.urls.forEach(function(url) { urls.push(url); });
+                    setSliderUrls(urls);
+                    var list = document.getElementById('slider-images-list');
+                    if (list) {
+                        data.urls.forEach(function(url) {
+                            var div = document.createElement('div');
+                            div.className = 'slider-image-item';
+                            div.style.cssText = 'position: relative; width: 120px;';
+                            div.innerHTML = '<img src="' + url + '" alt="" style="width: 100%; height: 80px; object-fit: cover; border-radius: 8px; display: block;">' +
+                                '<button type="button" class="btn-remove" onclick="removeSliderImage(this)" style="position: absolute; top: 4px; right: 4px; padding: 4px 8px; font-size: 0.85rem;">×</button>';
+                            list.appendChild(div);
+                        });
+                    }
+                }
+            }).catch(function() {});
+            this.value = '';
+        });
+    }
+});
+
+function moveBlock(blockId, delta) {
+    const input = document.getElementById('blockOrderInput');
+    const container = document.getElementById('blocks-container');
+    if (!input || !container) return;
+    let order;
+    try {
+        order = JSON.parse(input.value);
+    } catch (e) {
+        order = ['header', 'news', 'school_info', 'directions', 'events_achievements', 'announcements'];
+    }
+    const idx = order.indexOf(blockId);
+    if (idx === -1) return;
+    const newIdx = idx + delta;
+    if (newIdx < 0 || newIdx >= order.length) return;
+    [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
+    input.value = JSON.stringify(order);
+    order.forEach(function(id) {
+        const card = container.querySelector('[data-block-id="' + id + '"]');
+        if (card) container.appendChild(card);
+    });
+}
+
+function removeListItem(btn) {
+    btn.closest('.list-item').remove();
+}
+
+document.getElementById('editForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {};
+    
+    // Обрабатываем обычные поля
+    for (let [key, value] of formData.entries()) {
+        if (key.includes('[]')) {
+            const fieldName = key.replace('[]', '');
+            if (!data[fieldName]) data[fieldName] = [];
+            data[fieldName].push(value);
+        } else if (key.includes('[')) {
+            // Обработка вложенных объектов (stats, events)
+            const match = key.match(/(\w+)\[(\w+)\]/);
+            if (match) {
+                const objName = match[1];
+                const objKey = match[2];
+                if (!data[objName]) data[objName] = {};
+                data[objName][objKey] = value;
+            } else {
+                // Обработка массивов объектов (events)
+                const match2 = key.match(/(\w+)\[\]\[(\w+)\]/);
+                if (match2) {
+                    const arrName = match2[1];
+                    const objKey = match2[2];
+                    if (!data[arrName]) data[arrName] = [];
+                    const index = formData.getAll(key).length - 1;
+                    if (!data[arrName][index]) data[arrName][index] = {};
+                    data[arrName][index][objKey] = value;
+                }
+            }
+        } else {
+            data[key] = value;
+        }
+    }
+    
+    const eventDates = formData.getAll('events[][date]');
+    const eventTexts = formData.getAll('events[][text]');
+    if (eventDates.length > 0) {
+        data.events = [];
+        for (let i = 0; i < eventDates.length; i++) {
+            if (eventDates[i] || eventTexts[i]) {
+                data.events.push({ date: eventDates[i] || '', text: eventTexts[i] || '' });
+            }
+        }
+    }
+
+    const dirTitles = formData.getAll('directions[][title]');
+    const dirDescs = formData.getAll('directions[][desc]');
+    if (dirTitles.length > 0) {
+        data.directions = [];
+        for (let i = 0; i < dirTitles.length; i++) {
+            data.directions.push({ title: dirTitles[i] || '', desc: dirDescs[i] || '' });
+        }
+    }
+
+    if (data.block_order && typeof data.block_order === 'string') {
+        try {
+            data.block_order = JSON.parse(data.block_order);
+        } catch (e) {}
+    }
+
+    try {
+        const response = await fetch('/edit/index', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert('Страница успешно сохранена!');
+            window.location.href = '/';
+        } else {
+            alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        alert('Ошибка при сохранении: ' + error.message);
+    }
+});
+</script>
+{% endblock %}
+

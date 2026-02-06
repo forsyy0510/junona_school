@@ -1,0 +1,729 @@
+{% extends "base.html" %}
+
+{% block title %}Карта сайта - Администрирование{% endblock %}
+
+{% block content %}
+<div class="sitemap-container" style="padding: 24px; max-width: 1400px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 700;">🗺️ Карта сайта</h1>
+        <div style="display: flex; gap: 12px;">
+            <button onclick="addNewSection()" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                ➕ Добавить раздел
+            </button>
+            <button onclick="saveOrder()" class="btn" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white;">
+                💾 Сохранить изменения
+            </button>
+        </div>
+    </div>
+    
+    <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div id="sitemap-loading" style="text-align: center; padding: 40px;">
+            <div style="color: #6b7280;">Загрузка карты сайта...</div>
+        </div>
+        
+        <div id="sitemap-tree" style="display: none;">
+            <!-- Дерево разделов будет здесь -->
+        </div>
+        
+        <div id="sitemap-empty" style="display: none; text-align: center; padding: 40px; color: #6b7280;">
+            На сайте пока нет разделов
+        </div>
+    </div>
+
+    <div style="margin-top: 32px; background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h2 style="margin: 0 0 16px; font-size: 1.25rem;">Резервное копирование</h2>
+        <p style="color: #6b7280; margin-bottom: 16px;">Выгрузка данных и сайта целиком, по типам или выборочно. Загрузка данных из файла при глобальных изменениях.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end;">
+            <div>
+                <button type="button" id="backup-export-preview-btn" class="btn" style="background: #e5e7eb; color: #374151;">
+                    Показать, что будет выгружено
+                </button>
+            </div>
+            <div>
+                <a href="{{ url_for('admin.backup_export') }}" class="btn" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 8px;">
+                    Всё (JSON)
+                </a>
+                <span style="font-size: 0.8rem; color: #6b7280; margin-left: 8px;">вся БД</span>
+            </div>
+            <div>
+                <a href="{{ url_for('admin.backup_export_news') }}" class="btn" style="background: #6366f1; color: white; text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 8px;">
+                    Новости (JSON)
+                </a>
+                <span style="font-size: 0.8rem; color: #6b7280; margin-left: 8px;">новости и объявления</span>
+            </div>
+            <div>
+                <a href="{{ url_for('admin.backup_export_sveden') }}" class="btn" style="background: #0ea5e9; color: white; text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 8px;">
+                    Основные разделы (JSON)
+                </a>
+                <span style="font-size: 0.8rem; color: #6b7280; margin-left: 8px;">/sveden/*</span>
+            </div>
+            <div>
+                <a href="{{ url_for('admin.backup_export_sidebar') }}" class="btn" style="background: #8b5cf6; color: white; text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 8px;">
+                    Боковое меню (JSON)
+                </a>
+                <span style="font-size: 0.8rem; color: #6b7280; margin-left: 8px;">/sidebar/*</span>
+            </div>
+            <div>
+                <a href="{{ url_for('admin.backup_export_full') }}" class="btn" style="background: linear-gradient(135deg, #059669, #047857); color: white; text-decoration: none; display: inline-block; padding: 10px 20px; border-radius: 8px;">
+                    Сайт целиком (ZIP)
+                </a>
+                <span style="font-size: 0.8rem; color: #6b7280; margin-left: 8px;">БД + загрузки</span>
+            </div>
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <div style="font-weight: 600; margin-bottom: 10px;">Выборочная выгрузка</div>
+            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 12px;">Отметьте нужные типы данных и нажмите «Выгрузить выбранное».</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: center;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="include_news" id="sel-news" value="1"> Новости и объявления</label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="include_sveden" id="sel-sveden" value="1"> Основные разделы (/sveden/)</label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="include_sidebar" id="sel-sidebar" value="1"> Боковое меню (/sidebar/)</label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="include_page_content" id="sel-page" value="1"> Контент страниц</label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="include_other_sections" id="sel-other" value="1"> Прочие разделы</label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="include_users" id="sel-users" value="1"> Пользователи</label>
+                <button type="button" id="backup-export-selective-btn" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">Выгрузить выбранное (JSON)</button>
+            </div>
+            <div id="backup-selective-error" style="margin-top: 8px; font-size: 0.875rem; color: #dc2626; display: none;"></div>
+        </div>
+            <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 24px; margin-top: 24px;">
+                <form id="backup-import-form" style="display: flex; align-items: flex-end; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 4px;">Только данные (.json)</label>
+                        <input type="file" name="file" accept=".json" required style="font-size: 0.875rem;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" name="clear_before" id="backup-clear-before" value="1" checked>
+                        <label for="backup-clear-before" style="font-size: 0.875rem;">Очистить перед загрузкой</label>
+                    </div>
+                    <button type="submit" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
+                        Загрузить данные
+                    </button>
+                </form>
+                <form id="backup-import-full-form" style="display: flex; align-items: flex-end; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 4px;">Сайт целиком (.zip)</label>
+                        <input type="file" name="file" accept=".zip" required style="font-size: 0.875rem;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" name="clear_before" id="backup-clear-before-full" value="1" checked>
+                        <label for="backup-clear-before-full" style="font-size: 0.875rem;">Очистить перед загрузкой</label>
+                    </div>
+                    <button type="submit" class="btn" style="background: linear-gradient(135deg, #059669, #047857); color: white;">
+                        Загрузить сайт из ZIP
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div id="backup-export-preview" style="display: none; margin-top: 16px;" class="backup-preview-box"></div>
+        <div id="backup-preview" style="display: none; margin-top: 16px;" class="backup-preview-box">
+            <div class="backup-preview-title">Предпросмотр загружаемых данных</div>
+            <div id="backup-preview-content" class="backup-preview-body"></div>
+            <div id="backup-preview-loading" style="display: none;" class="backup-preview-loading">Чтение файла...</div>
+        </div>
+        <div id="backup-message" style="margin-top: 12px; font-size: 0.875rem;"></div>
+    </div>
+</div>
+
+<style>
+.sitemap-item {
+    padding: 12px 16px;
+    margin: 8px 0;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: move;
+    transition: all 0.2s ease;
+}
+
+.sitemap-item:hover {
+    background: #f1f5f9;
+    border-color: #3b82f6;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.sitemap-item.dragging {
+    opacity: 0.5;
+    background: #e0e7ff;
+}
+
+.sitemap-item.drag-over {
+    border-top: 3px solid #3b82f6;
+}
+
+.sitemap-item.drop-as-child {
+    border-left: 4px solid #10b981;
+    background: #ecfdf5;
+}
+
+.sitemap-item-handle {
+    cursor: grab;
+    color: #9ca3af;
+    font-size: 18px;
+}
+
+.sitemap-item-handle:active {
+    cursor: grabbing;
+}
+
+.sitemap-item-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sitemap-item-title {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.sitemap-item-url {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-family: monospace;
+}
+
+.sitemap-item-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.sitemap-move-select {
+    padding: 6px 10px;
+    font-size: 0.875rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #fff;
+    color: #374151;
+    min-width: 140px;
+    max-width: 200px;
+}
+
+.sitemap-move-select:hover,
+.sitemap-move-select:focus {
+    border-color: #3b82f6;
+    outline: none;
+}
+
+.sitemap-item-actions button {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-edit {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #2563eb;
+}
+
+.btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+}
+
+.sitemap-children {
+    margin-left: 32px;
+    padding-left: 16px;
+    border-left: 2px dashed #e5e7eb;
+}
+
+.sitemap-item-parent {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+#backup-import-form .btn:hover {
+    opacity: 0.9;
+}
+
+.backup-preview-box {
+    padding: 16px 20px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+.backup-preview-title {
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1e293b;
+    font-size: 1rem;
+}
+.backup-preview-body { color: #475569; }
+.backup-preview-loading { color: #64748b; margin-top: 8px; }
+
+.backup-table-block {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+.backup-table-block h4,
+.backup-table-block .backup-table-block-title {
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+    color: #334155;
+}
+.backup-upload-section {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #0ea5e9;
+}
+.backup-upload-section-clickable {
+    cursor: pointer;
+}
+.backup-upload-section-clickable:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    border-left-color: #0284c7;
+}
+.backup-upload-toggle-hint {
+    color: #0ea5e9;
+    font-size: 0.8rem;
+}
+.backup-upload-files-toggle {
+    margin-top: 8px;
+}
+.backup-upload-section-header {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #0f172a;
+    font-size: 0.9rem;
+}
+.backup-upload-section-path {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-family: monospace;
+    margin-bottom: 6px;
+}
+.backup-upload-section-meta {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+.backup-upload-file-list {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 0.8rem;
+    max-height: 140px;
+    overflow-y: auto;
+    color: #475569;
+}
+.backup-upload-file-list li { margin: 2px 0; }
+.backup-upload-file-size { color: #94a3b8; font-size: 0.75rem; }
+</style>
+
+<script src="/static/admin-sitemap.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function() {
+    var tableLabels = {
+        'user': 'Пользователи',
+        'news': 'Новости',
+        'announcement': 'Объявления',
+        'file': 'Файлы (привязки)',
+        'info_section': 'Разделы информации',
+        'page_content': 'Контент страниц',
+        'info_file': 'Файлы разделов'
+    };
+
+    function esc(s) {
+        if (s == null) return '';
+        var div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+
+    function formatBytes(n) {
+        if (n == null || n < 0) return '';
+        if (n < 1024) return n + ' Б';
+        if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' КБ';
+        return (n / (1024 * 1024)).toFixed(1) + ' МБ';
+    }
+
+    function renderExportPreview(data) {
+        if (!data) return '';
+        var html = '<div class="backup-preview-title">Что попадёт в выгрузку</div>';
+        if (data.tables) {
+            html += '<div class="backup-table-block"><h4>База данных</h4><ul style="margin: 0; padding-left: 20px;">';
+            var labels = tableLabels;
+            for (var k in data.tables) {
+                html += '<li>' + esc(labels[k] || k) + ': <strong>' + data.tables[k] + '</strong> записей</li>';
+            }
+            html += '</ul></div>';
+        }
+        if (data.uploads && data.uploads.sections && data.uploads.sections.length > 0) {
+            html += '<div class="backup-table-block"><h4>Файлы (uploads)</h4>';
+            html += '<div style="font-size: 0.8rem; color: #64748b; margin-bottom: 10px;">Всего файлов: <strong>' + data.uploads.total_files + '</strong>, объём: <strong>' + formatBytes(data.uploads.total_size) + '</strong>. Клик по разделу — показать файлы выгрузки.</div>';
+            data.uploads.sections.forEach(function(s, idx) {
+                var title = s.title ? esc(s.title) + ' (' + esc(s.endpoint) + ')' : esc(s.path);
+                html += '<div class="backup-upload-section backup-upload-section-clickable" data-section-index="' + idx + '" role="button" tabindex="0">';
+                html += '<div class="backup-upload-section-header">' + title + '</div>';
+                html += '<div class="backup-upload-section-path">' + esc(s.path) + '</div>';
+                html += '<div class="backup-upload-section-meta">' + s.count + ' файлов, ' + formatBytes(s.size) + ' — <span class="backup-upload-toggle-hint">показать файлы</span></div>';
+                html += '<ul class="backup-upload-file-list backup-upload-files-toggle" id="export-files-' + idx + '" style="display: none;">';
+                if (s.files && s.files.length > 0) {
+                    s.files.forEach(function(f) {
+                        var name = (typeof f === 'string') ? f : (f.name || f.path || '');
+                        var sizeStr = (f && f.size != null) ? ' <span class="backup-upload-file-size">' + formatBytes(f.size) + '</span>' : '';
+                        html += '<li>' + esc(name) + sizeStr + '</li>';
+                    });
+                    if (s.count > (s.files ? s.files.length : 0)) {
+                        html += '<li style="color: #94a3b8;">… ещё ' + (s.count - (s.files ? s.files.length : 0)) + ' файлов</li>';
+                    }
+                } else {
+                    html += '<li style="color: #94a3b8;">Нет файлов в этом разделе</li>';
+                }
+                html += '</ul></div>';
+            });
+            html += '</div>';
+        }
+        return html;
+    }
+
+    function bindExportPreviewClicks(container) {
+        if (!container) return;
+        container.querySelectorAll('.backup-upload-section-clickable').forEach(function(el) {
+            el.addEventListener('click', function() {
+                var idx = this.getAttribute('data-section-index');
+                var filesEl = document.getElementById('export-files-' + idx);
+                var hint = this.querySelector('.backup-upload-toggle-hint');
+                if (!filesEl) return;
+                var visible = filesEl.style.display !== 'none';
+                filesEl.style.display = visible ? 'none' : 'block';
+                if (hint) hint.textContent = visible ? 'показать файлы' : 'скрыть файлы';
+            });
+            el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+            });
+        });
+    }
+
+    function renderDataPreview(data) {
+        if (!data || !data.tables) return '';
+        var html = '';
+        if (data.exported_at) {
+            html += '<div style="margin-bottom: 10px; color: #6b7280;">Дата выгрузки: ' + esc(data.exported_at) + '</div>';
+        }
+        var tables = data.tables;
+        var order = ['user', 'news', 'announcement', 'file', 'info_section', 'page_content', 'info_file'];
+        order.forEach(function(tableName) {
+            var rows = tables[tableName];
+            if (!rows || !Array.isArray(rows)) return;
+            var count = rows.length;
+            var label = tableLabels[tableName] || tableName;
+            html += '<div class="backup-table-block">';
+            html += '<h4 class="backup-table-block-title">' + esc(label) + ' <span style="color: #64748b; font-weight: normal;">(' + count + ')</span></h4>';
+            var sample = [];
+            if (tableName === 'user' && count > 0) {
+                rows.slice(0, 10).forEach(function(r) { sample.push(esc(r.username || r.id)); });
+            } else if (tableName === 'news' && count > 0) {
+                rows.slice(0, 8).forEach(function(r) { sample.push(esc((r.title || '').slice(0, 60)) + (r.title && r.title.length > 60 ? '…' : '')); });
+            } else if (tableName === 'announcement' && count > 0) {
+                rows.slice(0, 5).forEach(function(r) { sample.push(esc((r.title || '').slice(0, 60)) + (r.title && r.title.length > 60 ? '…' : '')); });
+            } else if (tableName === 'file' && count > 0) {
+                rows.slice(0, 5).forEach(function(r) { sample.push(esc(r.filename || r.id)); });
+            } else if (tableName === 'info_section' && count > 0) {
+                rows.slice(0, 15).forEach(function(r) { sample.push(esc(r.endpoint) + ': ' + esc((r.title || '').slice(0, 40)) + (r.title && r.title.length > 40 ? '…' : '')); });
+            } else if (tableName === 'page_content' && count > 0) {
+                rows.forEach(function(r) { sample.push(esc(r.page_key)); });
+            } else if (tableName === 'info_file' && count > 0) {
+                rows.slice(0, 5).forEach(function(r) { sample.push(esc(r.original_filename || r.filename)); });
+            }
+            if (sample.length > 0) {
+                html += '<ul style="margin: 0; padding-left: 20px; font-size: 0.8rem; color: #4b5563; max-height: 120px; overflow-y: auto;">';
+                sample.forEach(function(s) { html += '<li>' + s + '</li>'; });
+                if (count > sample.length) {
+                    html += '<li style="color: #9ca3af;">… и ещё ' + (count - sample.length) + '</li>';
+                }
+                html += '</ul>';
+            }
+            html += '</div>';
+        });
+        return html;
+    }
+
+    function showPreview(contentHtml, showLoading) {
+        var box = document.getElementById('backup-preview');
+        var content = document.getElementById('backup-preview-content');
+        var loading = document.getElementById('backup-preview-loading');
+        if (!box || !content) return;
+        if (showLoading) {
+            loading.style.display = 'block';
+            content.innerHTML = '';
+        } else {
+            loading.style.display = 'none';
+            content.innerHTML = contentHtml || '';
+        }
+        box.style.display = 'block';
+    }
+
+    var form = document.getElementById('backup-import-form');
+    var msg = document.getElementById('backup-message');
+    if (!form || !msg) return;
+
+    var exportPreviewBtn = document.getElementById('backup-export-preview-btn');
+    var exportPreviewBox = document.getElementById('backup-export-preview');
+    if (exportPreviewBtn && exportPreviewBox) {
+        exportPreviewBtn.addEventListener('click', function() {
+            exportPreviewBox.style.display = 'none';
+            exportPreviewBox.innerHTML = '<div class="backup-preview-loading">Загрузка...</div>';
+            exportPreviewBox.style.display = 'block';
+            fetch('{{ url_for("admin.backup_export_preview") }}', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.error) {
+                        exportPreviewBox.innerHTML = '<div style="color: #dc2626;">' + esc(data.error) + '</div>';
+                    } else {
+                        exportPreviewBox.innerHTML = renderExportPreview(data);
+                        bindExportPreviewClicks(exportPreviewBox);
+                    }
+                })
+                .catch(function() {
+                    exportPreviewBox.innerHTML = '<div style="color: #dc2626;">Ошибка загрузки предпросмотра</div>';
+                });
+        });
+    }
+
+    var selectiveBtn = document.getElementById('backup-export-selective-btn');
+    var selectiveErr = document.getElementById('backup-selective-error');
+    if (selectiveBtn && selectiveErr) {
+        selectiveBtn.addEventListener('click', function() {
+            var fd = new FormData();
+            if (document.getElementById('sel-news') && document.getElementById('sel-news').checked) fd.append('include_news', '1');
+            if (document.getElementById('sel-sveden') && document.getElementById('sel-sveden').checked) fd.append('include_sveden', '1');
+            if (document.getElementById('sel-sidebar') && document.getElementById('sel-sidebar').checked) fd.append('include_sidebar', '1');
+            if (document.getElementById('sel-page') && document.getElementById('sel-page').checked) fd.append('include_page_content', '1');
+            if (document.getElementById('sel-other') && document.getElementById('sel-other').checked) fd.append('include_other_sections', '1');
+            if (document.getElementById('sel-users') && document.getElementById('sel-users').checked) fd.append('include_users', '1');
+            var hasAny = document.getElementById('sel-news').checked || document.getElementById('sel-sveden').checked ||
+                document.getElementById('sel-sidebar').checked || document.getElementById('sel-page').checked ||
+                document.getElementById('sel-other').checked || document.getElementById('sel-users').checked;
+            if (!hasAny) {
+                selectiveErr.textContent = 'Выберите хотя бы один тип данных';
+                selectiveErr.style.display = 'block';
+                return;
+            }
+            selectiveErr.style.display = 'none';
+            selectiveBtn.disabled = true;
+            fetch('{{ url_for("admin.backup_export_selective") }}', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) {
+                    if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || 'Ошибка'); });
+                    return r.blob();
+                })
+                .then(function(blob) {
+                    var a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'backup_selective_' + new Date().toISOString().slice(0, 19).replace(/-/g, '').replace('T', '_') + '.json';
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                })
+                .catch(function(e) {
+                    selectiveErr.textContent = e.message || 'Ошибка выгрузки';
+                    selectiveErr.style.display = 'block';
+                })
+                .finally(function() { selectiveBtn.disabled = false; });
+        });
+    }
+
+    var jsonFileInput = form.querySelector('input[name="file"]');
+    if (jsonFileInput) {
+        jsonFileInput.addEventListener('change', function() {
+            var file = this.files[0];
+            if (!file) { return; }
+            var reader = new FileReader();
+            reader.onload = function() {
+                try {
+                    var data = JSON.parse(reader.result);
+                    showPreview(renderDataPreview(data), false);
+                } catch (e) {
+                    showPreview('<span style="color: #dc2626;">Некорректный JSON</span>', false);
+                }
+            };
+            reader.readAsText(file, 'utf-8');
+        });
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var fd = new FormData(form);
+        var fileInput = form.querySelector('input[name="file"]');
+        if (!fileInput || !fileInput.files.length) {
+            msg.textContent = 'Выберите файл .json';
+            msg.style.color = '#dc2626';
+            return;
+        }
+        fd.set('file', fileInput.files[0]);
+        fd.set('clear_before', form.querySelector('#backup-clear-before').checked ? 'true' : 'false');
+        msg.textContent = 'Загрузка...';
+        msg.style.color = '#6b7280';
+        fetch('{{ url_for("admin.backup_import") }}', {
+            method: 'POST',
+            body: fd,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(o) {
+            if (o.ok && o.data.success) {
+                msg.textContent = o.data.message || 'Данные загружены.';
+                msg.style.color = '#059669';
+            } else {
+                msg.textContent = o.data.error || 'Ошибка загрузки';
+                msg.style.color = '#dc2626';
+            }
+        }).catch(function() {
+            msg.textContent = 'Ошибка сети или сервера';
+            msg.style.color = '#dc2626';
+        });
+    });
+
+    var formFull = document.getElementById('backup-import-full-form');
+    if (formFull) {
+        var zipFileInput = formFull.querySelector('input[name="file"]');
+        if (zipFileInput) {
+            zipFileInput.addEventListener('change', function() {
+                var file = this.files[0];
+                if (!file) return;
+                showPreview('', true);
+                if (typeof JSZip === 'undefined') {
+                    showPreview('<span style="color: #dc2626;">Библиотека JSZip не загружена</span>', false);
+                    return;
+                }
+                var reader = new FileReader();
+                reader.onload = function() {
+                    JSZip.loadAsync(reader.result).then(function(zip) {
+                        var names = Object.keys(zip.files);
+                        if (names.indexOf('data.json') === -1) {
+                            showPreview('<span style="color: #dc2626;">В архиве нет data.json</span>', false);
+                            return;
+                        }
+                        return zip.file('data.json').async('string').then(function(text) {
+                            var data;
+                            try {
+                                data = JSON.parse(text);
+                            } catch (e) {
+                                showPreview('<span style="color: #dc2626;">Некорректный data.json в архиве</span>', false);
+                                return;
+                            }
+                            var html = renderDataPreview(data);
+                            var uploadNames = names.filter(function(n) { return n.indexOf('uploads/') === 0 && !n.endsWith('/'); });
+                            var endpointToTitle = {};
+                            if (data.tables && data.tables.info_section && Array.isArray(data.tables.info_section)) {
+                                data.tables.info_section.forEach(function(r) {
+                                    if (r.endpoint) endpointToTitle[r.endpoint] = r.title;
+                                });
+                            }
+                            var bySection = {};
+                            uploadNames.forEach(function(p) {
+                                var rest = p.replace(/^uploads\//, '');
+                                var parts = rest.split('/');
+                                var sectionPath = parts.length >= 2 ? parts.slice(0, -1).join('/') : (parts[0] || '(корень)');
+                                if (!bySection[sectionPath]) {
+                                    bySection[sectionPath] = { files: [], count: 0, size: 0 };
+                                }
+                                var entry = zip.files[p];
+                                var size = entry && entry.uncompressedSize ? entry.uncompressedSize : 0;
+                                bySection[sectionPath].files.push({ path: p, name: parts[parts.length - 1], size: size });
+                                bySection[sectionPath].count += 1;
+                                bySection[sectionPath].size += size;
+                            });
+                            var totalSize = uploadNames.reduce(function(sum, n) {
+                                var e = zip.files[n];
+                                return sum + (e && e.uncompressedSize ? e.uncompressedSize : 0);
+                            }, 0);
+                            html += '<div class="backup-table-block" style="margin-top: 14px;"><h4>Файлы в архиве (uploads)</h4>';
+                            html += '<div class="backup-upload-section-meta" style="margin-bottom: 12px;">Всего: <strong>' + uploadNames.length + '</strong> файлов, объём: <strong>' + formatBytes(totalSize) + '</strong></div>';
+                            var sectionPaths = Object.keys(bySection).sort(function(a, b) {
+                                var aParts = a.split('/').length;
+                                var bParts = b.split('/').length;
+                                if (aParts !== bParts) return aParts - bParts;
+                                return a.localeCompare(b);
+                            });
+                            sectionPaths.forEach(function(sectionPath) {
+                                var sec = bySection[sectionPath];
+                                var pathParts = sectionPath.split('/');
+                                var endpoint = pathParts[pathParts.length - 1] || sectionPath;
+                                var title = endpointToTitle[endpoint] || endpoint;
+                                html += '<div class="backup-upload-section">';
+                                html += '<div class="backup-upload-section-header">' + esc(title) + (endpoint !== title ? ' <span style="color: #64748b;">(' + esc(endpoint) + ')</span>' : '') + '</div>';
+                                html += '<div class="backup-upload-section-path">uploads/' + esc(sectionPath) + '</div>';
+                                html += '<div class="backup-upload-section-meta">' + sec.count + ' файлов, ' + formatBytes(sec.size) + '</div>';
+                                var fileList = sec.files.slice(0, 30);
+                                html += '<ul class="backup-upload-file-list">';
+                                fileList.forEach(function(f) {
+                                    html += '<li>' + esc(f.name) + ' <span class="backup-upload-file-size">' + formatBytes(f.size) + '</span></li>';
+                                });
+                                if (sec.files.length > 30) {
+                                    html += '<li style="color: #94a3b8;">… ещё ' + (sec.files.length - 30) + ' файлов</li>';
+                                }
+                                html += '</ul></div>';
+                            });
+                            html += '</div>';
+                            showPreview(html, false);
+                        });
+                    }).catch(function() {
+                        showPreview('<span style="color: #dc2626;">Не удалось прочитать ZIP-архив</span>', false);
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        formFull.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var fd = new FormData(formFull);
+            var fileInput = formFull.querySelector('input[name="file"]');
+            if (!fileInput || !fileInput.files.length) {
+                msg.textContent = 'Выберите файл .zip';
+                msg.style.color = '#dc2626';
+                return;
+            }
+            fd.set('file', fileInput.files[0]);
+            fd.set('clear_before', formFull.querySelector('#backup-clear-before-full').checked ? 'true' : 'false');
+            msg.textContent = 'Загрузка архива...';
+            msg.style.color = '#6b7280';
+            fetch('{{ url_for("admin.backup_import_full") }}', {
+                method: 'POST',
+                body: fd,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+            .then(function(o) {
+                if (o.ok && o.data.success) {
+                    msg.textContent = o.data.message || 'Сайт загружен из архива.';
+                    msg.style.color = '#059669';
+                } else {
+                    msg.textContent = o.data.error || 'Ошибка загрузки';
+                    msg.style.color = '#dc2626';
+                }
+            }).catch(function() {
+                msg.textContent = 'Ошибка сети или сервера';
+                msg.style.color = '#dc2626';
+            });
+        });
+    }
+})();
+</script>
+{% endblock %}
+

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}День знаний 2024 — Юнона{% endblock %}
+{% block content %}
+<h1>День знаний 2024</h1>
+<div class="news" style="display: flex; flex-wrap: wrap; gap: 18px;">
+    {% for i in range(1, 7) %}
+    <div class="card item" style="width: 200px; padding: 10px;">
+        <img src="https://placehold.co/180x120?text=Фото+{{i}}" alt="Фото {{i}}" style="width:100%; border-radius: 8px;">
+        <div class="date">01.09.2024</div>
+        <div class="content">Праздничное мероприятие</div>
+    </div>
+    {% endfor %}
+</div>
+<a class="btn" href="/albums">К списку альбомов</a>
+{% endblock %} 

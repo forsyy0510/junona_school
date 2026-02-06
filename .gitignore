@@ -1,0 +1,30 @@
+# Python bytecode and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment files
+.env
+.env.*
+
+# Instance data (SQLite, etc.)
+instance/
+
+# Uploads (user-generated content)
+uploads/
+
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.cursor/
+
+# Logs
+*.log

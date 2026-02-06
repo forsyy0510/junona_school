@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_title }} - {{ error_code }}{% endblock %}
+
+{% block content %}
+<div class="error-page" style="max-width: 800px; margin: 60px auto; padding: 40px; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div class="error-header" style="text-align: center; margin-bottom: 40px;">
+        <div class="error-code" style="font-size: 120px; font-weight: 700; color: #ef4444; line-height: 1; margin-bottom: 20px;">
+            {{ error_code }}
+        </div>
+        <h1 class="error-title" style="font-size: 32px; font-weight: 600; color: #1f2937; margin: 0 0 16px 0;">
+            {{ error_title }}
+        </h1>
+        <p class="error-message" style="font-size: 18px; color: #6b7280; margin: 0;">
+            {{ error_message }}
+        </p>
+    </div>
+    
+    <div class="error-instructions" style="background: #f9fafb; border-radius: 8px; padding: 24px; margin-bottom: 30px;">
+        <h2 style="font-size: 20px; font-weight: 600; color: #1f2937; margin: 0 0 16px 0;">
+            Что делать:
+        </h2>
+        <ol style="margin: 0; padding-left: 24px; color: #374151; font-size: 16px; line-height: 1.8;">
+            {% for instruction in instructions %}
+            <li style="margin-bottom: 8px;">{{ instruction|safe }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+    
+    {% if error_details and config.DEBUG %}
+    <div class="error-details" style="background: #1f2937; color: #f3f4f6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+        <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 12px 0; color: #ef4444;">
+            Детали ошибки (только в режиме отладки):
+        </h3>
+        <pre style="margin: 0; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; overflow-x: auto; max-height: 400px; overflow-y: auto;">{{ error_details }}</pre>
+    </div>
+    {% endif %}
+    
+    <div class="error-actions" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <a href="/" class="btn btn-primary" style="padding: 12px 24px; background: #3b82f6; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 500; transition: background 0.2s;">
+            🏠 Вернуться на главную
+        </a>
+        <button onclick="window.history.back()" class="btn btn-secondary" style="padding: 12px 24px; background: #6b7280; color: #fff; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+            ← Назад
+        </button>
+        <button onclick="window.location.reload()" class="btn btn-secondary" style="padding: 12px 24px; background: #10b981; color: #fff; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+            🔄 Обновить страницу
+        </button>
+    </div>
+    
+    <div class="error-help" style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #e5e7eb; text-align: center;">
+        <p style="color: #6b7280; font-size: 14px; margin: 0;">
+            Если проблема сохраняется, обратитесь к администратору сайта
+        </p>
+    </div>
+</div>
+
+<style>
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
+

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Объявления — Юнона{% endblock %}
+{% block meta_description %}Актуальные объявления МБОУ ИТ Гимназия Юнона. Важная информация для учащихся, родителей и педагогов.{% endblock %}
+{% block meta_keywords %}объявления школы, информация для родителей, школьные объявления, гимназия Юнона{% endblock %}
+{% block content %}
+<h1>Объявления</h1>
+{% if current_user.is_authenticated %}
+  <p><a class="btn" href="/announcements/new">Добавить объявление</a></p>
+{% endif %}
+<style>
+  .list-announcement-item{display:flex;gap:16px;align-items:flex-start;position:relative;cursor:pointer;}
+  .list-announcement-thumb{flex:0 0 160px;max-width:160px}
+  .list-announcement-thumb img{width:160px;height:110px;object-fit:cover;border-radius:10px;display:block}
+  .list-announcement-body{flex:1;min-width:0}
+  .list-announcement-date{position:absolute;top:12px;right:16px;color:var(--color-muted);font-size:.95em}
+</style>
+{% for a in announcements %}
+  <div class="card item list-announcement-item" onclick="location.href='/announcements/{{ a.id }}'" role="link" tabindex="0">
+    <div class="list-announcement-thumb">
+      {% set image_files = a.files | selectattr('kind', 'equalto', 'image') | list %}
+      {% if image_files %}
+        {% set first_image = image_files[0] %}
+        <img src="{{ first_image.filename | announcement_file_url(a.id) }}" alt="{{ a.title }}">
+      {% else %}
+        <div class="img-placeholder" style="width:160px;height:110px;background:#f0f0f0;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#999;">
+          <span>Нет фото</span>
+        </div>
+      {% endif %}
+    </div>
+    <div class="list-announcement-body">
+      <a class="item-title" href="/announcements/{{ a.id }}">{{ a.title }} {% if a.is_featured %}⭐{% endif %}</a>
+      <div style="margin-top:8px; color: var(--color-text); opacity:0.9;">
+        {{ a.content[:220] }}{% if a.content|length > 220 %}...{% endif %}
+      </div>
+    </div>
+    <div class="list-announcement-date">{{ (a.publication_date or a.created_at).strftime('%d.%m.%Y') }}</div>
+  </div>
+{% else %}
+  <div>Нет объявлений</div>
+{% endfor %}
+{% endblock %} 

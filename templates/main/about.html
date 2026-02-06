@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}О школе — Юнона{% endblock %}
+{% block meta_description %}МБОУ ИТ Гимназия Юнона - история, миссия, достижения. Школа основана в 1995 году, лидер в области IT-образования в регионе.{% endblock %}
+{% block meta_keywords %}история школы Юнона, миссия гимназии, достижения, IT-образование, история гимназии{% endblock %}
+{% block content %}
+{% if current_user.is_authenticated %}
+<div style="text-align: right; margin-bottom: 16px;">
+    <a href="/edit/about" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+        ✏️ Редактировать
+    </a>
+</div>
+{% endif %}
+<h1>О школе</h1>
+<div class="card item" style="max-width: 700px; margin: 0 auto;">
+    <h2>История</h2>
+    <p>{{ (page_content|default({})).get('history', 'Гимназия "Юнона" основана в 1995 году. За годы работы школа стала одним из лидеров в области IT-образования в регионе.') }}</p>
+    <h2>Миссия</h2>
+    <p>{{ (page_content|default({})).get('mission', 'Создание условий для развития талантов, воспитание патриотизма, формирование современных компетенций у учащихся.') }}</p>
+    <h2>Достижения</h2>
+    <ul>
+        {% for item in (page_content|default({})).get('achievements', ['Победы в региональных и всероссийских олимпиадах', 'Участие в международных проектах', 'Собственная IT-лаборатория и медиацентр']) %}
+        <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %} 

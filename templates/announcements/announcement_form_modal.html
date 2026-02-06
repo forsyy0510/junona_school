@@ -1,0 +1,273 @@
+<!-- Модальная форма редактирования объявления -->
+<div class="edit-container">
+    <form method="post" enctype="multipart/form-data" class="edit-form" id="announcementForm">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-section">
+            <h2>📢 Основная информация</h2>
+            <div class="form-group">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.publication_date.label(class="form-label") }}
+                {{ form.publication_date(type='date', class="form-control") }}
+                <small class="form-text">Если не указано — будет использована дата создания</small>
+            </div>
+            <div class="form-group">
+                <label class="form-checkbox">
+                    {{ form.is_featured() }}
+                    <span class="checkmark"></span>
+                    Сделать объявление главным
+                </label>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>🖼️ Изображения</h2>
+            <div class="form-group">
+                {{ form.images.label(class="form-label") }}
+                {{ form.images(multiple=True, class="form-control") }}
+                <small class="form-text">Загрузите несколько фото. Превью выбирается ниже.</small>
+            </div>
+            
+            {% if images %}
+            <div class="form-group">
+                <label class="form-label">Выберите изображение для превью:</label>
+                <div class="image-preview-grid">
+                    {% for img in images %}
+                    <label class="image-preview-item">
+                        <input type="radio" name="preview_image" value="{{ img.filename }}" 
+                               {% if item and item.image==img.filename or img.is_preview %}checked{% endif %}>
+                        <img src="/uploads/images/announcements/{{ img.filename }}" alt="Превью" class="preview-image">
+                        <div class="preview-overlay">
+                            <span class="preview-check">✓</span>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-section">
+            <h2>📝 Содержимое</h2>
+            <div class="form-group">
+                {{ form.content.label(class="form-label") }}
+                {{ form.content(rows=10, class_='js-rich form-control') }}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>📁 Документы</h2>
+            <div class="form-group">
+                {{ form.files.label(class="form-label") }}
+                {{ form.files(multiple=True, class="form-control") }}
+                <small class="form-text">Документы (PDF, DOC, DOCX, TXT)</small>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>🚀 Публикация</h2>
+            <div class="form-group">
+                <label class="form-checkbox">
+                    {{ form.publish_now() }}
+                    <span class="checkmark"></span>
+                    Опубликовать сейчас
+                </label>
+            </div>
+        </div>
+
+        <div class="submit-section">
+            {{ form.submit(class="btn btn-success", style="font-size: 16px; padding: 12px 30px;") }}
+        </div>
+    </form>
+</div>
+
+<style>
+/* Стили для модальной формы объявлений */
+.edit-container {
+    padding: 20px;
+    max-width: 100%;
+}
+
+.form-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.form-section h2 {
+    margin: 0 0 15px 0;
+    color: #2d3748;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-text {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #718096;
+}
+
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.form-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.image-preview-item {
+    position: relative;
+    cursor: pointer;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.image-preview-item:hover {
+    transform: scale(1.05);
+}
+
+.image-preview-item input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.preview-image {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    display: block;
+}
+
+.preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(102, 126, 234, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.image-preview-item input[type="radio"]:checked + .preview-image + .preview-overlay {
+    opacity: 1;
+}
+
+.preview-check {
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.submit-section {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.btn-success:disabled {
+    background: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .edit-container {
+        padding: 15px;
+    }
+    
+    .form-section {
+        padding: 15px;
+    }
+    
+    .image-preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+    
+    .preview-image {
+        height: 60px;
+    }
+}
+</style>

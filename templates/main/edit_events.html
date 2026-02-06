@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Редактирование событий — Юнона{% endblock %}
+{% block content %}
+<style>
+.edit-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.edit-form {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.event-item {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.btn-remove {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-add {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+.btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+</style>
+
+<div class="edit-container">
+    <div class="edit-header">
+        <h1>✏️ Редактирование ближайших событий</h1>
+        <a href="/" class="btn-cancel">← Назад</a>
+    </div>
+
+    <form class="edit-form" id="editForm" method="POST">
+        <div id="events-list">
+            {% for event in (page_content|default({})).get('events', []) %}
+            <div class="event-item" data-index="{{ loop.index0 }}">
+                <h3>Событие {{ loop.index }}</h3>
+                <div class="form-group">
+                    <label>Дата:</label>
+                    <input type="text" name="events[{{ loop.index0 }}][date]" value="{{ event.get('date', '') }}" placeholder="Например: Сентябрь 2024" required>
+                </div>
+                <div class="form-group">
+                    <label>Описание:</label>
+                    <textarea name="events[{{ loop.index0 }}][text]">{{ event.get('text', '') }}</textarea>
+                </div>
+                <button type="button" class="btn-remove" onclick="removeEvent(this)">Удалить событие</button>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn-add" onclick="addEvent()">+ Добавить событие</button>
+
+        <div class="btn-group">
+            <button type="submit" class="btn-save">💾 Сохранить</button>
+            <a href="/" class="btn-cancel">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+let eventIndex = {{ (page_content|default({})).get('events', [])|length }};
+
+function addEvent() {
+    const container = document.getElementById('events-list');
+    const div = document.createElement('div');
+    div.className = 'event-item';
+    div.setAttribute('data-index', eventIndex);
+    div.innerHTML = `
+        <h3>Событие ${eventIndex + 1}</h3>
+        <div class="form-group">
+            <label>Дата:</label>
+            <input type="text" name="events[${eventIndex}][date]" placeholder="Например: Сентябрь 2024" required>
+        </div>
+        <div class="form-group">
+            <label>Описание:</label>
+            <textarea name="events[${eventIndex}][text]"></textarea>
+        </div>
+        <button type="button" class="btn-remove" onclick="removeEvent(this)">Удалить событие</button>
+    `;
+    container.appendChild(div);
+    eventIndex++;
+}
+
+function removeEvent(btn) {
+    btn.closest('.event-item').remove();
+}
+
+document.getElementById('editForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const eventData = {};
+    
+    for (let [key, value] of formData.entries()) {
+        const match = key.match(/events\[(\d+)\]\[(\w+)\]/);
+        if (match) {
+            const index = parseInt(match[1]);
+            const field = match[2];
+            if (!eventData[index]) eventData[index] = {};
+            eventData[index][field] = value;
+        }
+    }
+    
+    const events = Object.keys(eventData)
+        .sort((a, b) => parseInt(a) - parseInt(b))
+        .map(key => eventData[key]);
+    
+    try {
+        const response = await fetch('/edit/events', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ events })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert('События успешно сохранены!');
+            window.location.href = '/';
+        } else {
+            alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        alert('Ошибка при сохранении: ' + error.message);
+    }
+});
+</script>
+{% endblock %}
+

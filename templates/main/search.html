@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Поиск — Юнона{% endblock %}
+{% block meta_description %}Поиск по сайту МБОУ ИТ Гимназия Юнона. Найдите нужную информацию, новости, объявления и документы.{% endblock %}
+{% block robots %}noindex, follow{% endblock %}
+{% block content %}
+<h1>Поиск</h1>
+<div class="card item" style="max-width: 500px; margin: 0 auto;">
+    <form>
+        <input type="text" placeholder="Введите запрос..." style="width:100%;margin-bottom:10px;padding:8px;">
+        <button class="btn" type="submit">Найти</button>
+    </form>
+</div>
+<div class="news">
+    <div class="card item">
+        <b>Результат:</b> <a href="/news/1">IT-Лаборатория открыта!</a>
+        <div class="date">01.09.2024</div>
+        <div class="content">В школе открылась современная лаборатория для изучения робототехники и программирования...</div>
+    </div>
+</div>
+{% endblock %} 

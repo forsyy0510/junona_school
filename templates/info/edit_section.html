@@ -1,0 +1,740 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Редактирование{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <div class="edit-header">
+        <h1>📝 {{ title }}</h1>
+        <a href="{{ url_for('info.' + endpoint) }}" class="btn btn-secondary">← Назад к просмотру</a>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="edit-form">
+        {{ form.hidden_tag() }}
+        
+        <!-- Основная информация -->
+        <div class="form-section">
+            <h2>ℹ️ Основная информация</h2>
+            <div class="form-group">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.text.label(class="form-label") }}
+                {{ form.text(class="form-control", rows="4") }}
+            </div>
+        </div>
+
+        <!-- Блоки контента -->
+        <div class="form-section">
+            <h2>🧩 Блоки контента</h2>
+            <div id="content-blocks-container">
+                {% for block in form.content_blocks %}
+                <div class="content-block">
+                    <div class="content-block-header">
+                        <h3 class="content-block-title">📦 Блок {{ loop.index }}</h3>
+                        <button type="button" onclick="removeContentBlock(this)" class="btn btn-danger btn-sm">🗑️ Удалить блок</button>
+                    </div>
+                    
+                    <div class="block-type-selector">
+                        {{ block.block_type.label(class="form-label") }}
+                        {{ block.block_type(class="form-control") }}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ block.title.label(class="form-label") }}
+                        {{ block.title(class="form-control") }}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ block.content.label(class="form-label") }}
+                        {{ block.content(class="form-control", rows="3") }}
+                    </div>
+
+                    <!-- Динамические поля в зависимости от типа блока -->
+                    <div class="block-content" data-block-type="{{ block.block_type.data or 'text' }}">
+                        <!-- Таблица -->
+                        <div class="table-content" style="display: none;">
+                            <h4>Заголовки таблицы</h4>
+                            <div id="table-headers-{{ loop.index0 }}">
+                                {% for header in block.table_headers %}
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                    <input type="text" name="content_blocks-{{ loop.index0 }}-table_headers-{{ loop.index0 }}" value="{{ header.data if header.data else '' }}" placeholder="Заголовок столбца" style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;" oninput="updateTablePreview({{ loop.index0 }})">
+                                    <button type="button" onclick="removeTableHeader(this)" class="btn btn-danger btn-sm">🗑️</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" onclick="addTableHeader({{ loop.index0 }})" class="btn btn-success btn-sm" style="margin-bottom: 15px;">➕ Добавить заголовок</button>
+                            
+                            <h4>Строки таблицы</h4>
+                            <div id="table-rows-{{ loop.index0 }}">
+                                {% for row in block.table_rows %}
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                    <div style="flex: 1; display: flex; gap: 5px;">
+                                        {% for cell in row.cells %}
+                                        <input type="text" name="content_blocks-{{ loop.index0 }}-table_rows-{{ loop.index0 }}-cells-{{ loop.index0 }}" value="{{ cell.data if cell.data else '' }}" placeholder="Ячейка" style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;" oninput="updateTablePreview({{ loop.index0 }})">
+                                        {% endfor %}
+                                    </div>
+                                    <button type="button" onclick="removeTableRow(this)" class="btn btn-danger btn-sm">🗑️</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" onclick="addTableRow({{ loop.index0 }})" class="btn btn-success btn-sm" style="margin-bottom: 20px;">➕ Добавить строку</button>
+                            
+                            <!-- Предпросмотр таблицы -->
+                            <div class="table-preview-section" style="margin-top: 25px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 2px solid #e2e8f0;">
+                                <h4 style="margin: 0 0 15px 0; color: #1e293b; font-size: 1.1rem;">👁️ Предпросмотр таблицы</h4>
+                                <div id="table-preview-{{ loop.index0 }}" class="table-preview" style="overflow-x: auto; border: 1px solid #d1d5db; border-radius: 8px; background: white;">
+                                    <table class="content-table" style="width: 100%; border-collapse: collapse; margin: 0;">
+                                        <thead>
+                                            <tr style="background: #f1f5f9;">
+                                                <th style="padding: 12px; border: 1px solid #d1d5db; text-align: left; font-weight: 600; color: #374151;">Заголовок 1</th>
+                                                <th style="padding: 12px; border: 1px solid #d1d5db; text-align: left; font-weight: 600; color: #374151;">Заголовок 2</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td style="padding: 12px; border: 1px solid #d1d5db; color: #6b7280;">Ячейка 1</td>
+                                                <td style="padding: 12px; border: 1px solid #d1d5db; color: #6b7280;">Ячейка 2</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p style="margin: 10px 0 0 0; font-size: 0.9rem; color: #6b7280; text-align: center;">
+                                    💡 Предпросмотр обновляется автоматически при изменении данных
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Список -->
+                        <div class="list-content" style="display: none;">
+                            <h4>Элементы списка</h4>
+                            <div id="list-items-{{ loop.index0 }}">
+                                {% for item in block.list_items %}
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                    <input type="text" name="content_blocks-{{ loop.index0 }}-list_items-{{ loop.index0 }}" value="{{ item.data if item.data else '' }}" placeholder="Элемент списка" style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                    <button type="button" onclick="removeListItem(this)" class="btn btn-danger btn-sm">🗑️</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" onclick="addListItem({{ loop.index0 }})" class="btn btn-success btn-sm">Добавить элемент</button>
+                        </div>
+
+                        <!-- Документы -->
+                        <div class="documents-content" style="display: none;">
+                            <h4>Документы</h4>
+                            <div id="documents-{{ loop.index0 }}">
+                                {% for doc in block.documents %}
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                    <input type="text" name="content_blocks-{{ loop.index0 }}-documents-{{ loop.index0 }}-name" value="{{ doc.name.data if doc.name.data else '' }}" placeholder="Название документа" style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                    <input type="text" name="content_blocks-{{ loop.index0 }}-documents-{{ loop.index0 }}-url" value="{{ doc.url.data if doc.url.data else '' }}" placeholder="URL документа" style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                    <button type="button" onclick="removeDocument(this)" class="btn btn-danger btn-sm">🗑️</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" onclick="addDocument({{ loop.index0 }})" class="btn btn-success btn-sm">➕ Добавить документ</button>
+                            
+                            <!-- Загрузка документов -->
+                            <div class="file-upload-section" style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <h5 style="margin: 0 0 10px 0; color: #374151; font-size: 0.9rem;">📁 Загрузить документы</h5>
+                                <input type="file" name="block_documents_{{ loop.index0 }}" multiple accept=".pdf,.doc,.docx,.txt" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; background: white;">
+                                <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #6b7280;">Поддерживаемые форматы: PDF, DOC, DOCX, TXT</p>
+                            </div>
+                        </div>
+
+                        <!-- Фотографии -->
+                        <div class="photos-content" style="display: none;">
+                            <h4>Фотографии</h4>
+                            <div id="photos-{{ loop.index0 }}">
+                                {% for photo in block.photos %}
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                    <input type="text" name="content_blocks-{{ loop.index0 }}-photos-{{ loop.index0 }}-url" value="{{ photo.url.data if photo.url.data else '' }}" placeholder="URL фотографии" style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                    <input type="text" name="content_blocks-{{ loop.index0 }}-photos-{{ loop.index0 }}-alt" value="{{ photo.alt.data if photo.alt.data else '' }}" placeholder="Описание фотографии" style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                    <button type="button" onclick="removePhoto(this)" class="btn btn-danger btn-sm">🗑️</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" onclick="addPhoto({{ loop.index0 }})" class="btn btn-success btn-sm">➕ Добавить фотографию</button>
+                            
+                            <!-- Загрузка фотографий -->
+                            <div class="file-upload-section" style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <h5 style="margin: 0 0 10px 0; color: #374151; font-size: 0.9rem;">📸 Загрузить фотографии</h5>
+                                <input type="file" name="block_photos_{{ loop.index0 }}" multiple accept=".jpg,.jpeg,.png,.gif" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; background: white;">
+                                <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #6b7280;">Поддерживаемые форматы: JPG, JPEG, PNG, GIF</p>
+                            </div>
+                        </div>
+
+                        <!-- Карточки людей -->
+                        <div class="persons-content" style="display: none;">
+                            <h4>Карточки людей</h4>
+                            <div id="persons-{{ loop.index0 }}">
+                                {% for person in block.persons %}
+                                <div style="border: 1px solid #d1d5db; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: white;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                        <h5 style="margin: 0;">Карточка {{ loop.index }}</h5>
+                                        <button type="button" onclick="removePerson(this)" class="btn btn-danger btn-xs">🗑️</button>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                                        <input type="text" name="content_blocks-{{ loop.index0 }}-persons-{{ loop.index0 }}-name" value="{{ person.name.data if person.name.data else '' }}" placeholder="ФИО" style="padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                        <input type="text" name="content_blocks-{{ loop.index0 }}-persons-{{ loop.index0 }}-position" value="{{ person.position.data if person.position.data else '' }}" placeholder="Должность" style="padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                        <input type="text" name="content_blocks-{{ loop.index0 }}-persons-{{ loop.index0 }}-photo" value="{{ person.photo.data if person.photo.data else '' }}" placeholder="URL фотографии" style="padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                        <input type="text" name="content_blocks-{{ loop.index0 }}-persons-{{ loop.index0 }}-email" value="{{ person.email.data if person.email.data else '' }}" placeholder="Email" style="padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                        <input type="text" name="content_blocks-{{ loop.index0 }}-persons-{{ loop.index0 }}-phone" value="{{ person.phone.data if person.phone.data else '' }}" placeholder="Телефон" style="padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                        <input type="text" name="content_blocks-{{ loop.index0 }}-persons-{{ loop.index0 }}-education" value="{{ person.education.data if person.education.data else '' }}" placeholder="Образование" style="padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                        <input type="text" name="content_blocks-{{ loop.index0 }}-persons-{{ loop.index0 }}-experience" value="{{ person.experience.data if person.experience.data else '' }}" placeholder="Опыт работы" style="padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                    </div>
+                                    <!-- Загрузка фотографии для карточки -->
+                                    <div style="margin-bottom: 10px; padding: 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; color: #374151; font-weight: 500;">📸 Фотография:</label>
+                                        <input type="file" name="person_photo_file_{{ loop.index0 }}_{{ loop.index0 }}" accept=".jpg,.jpeg,.png,.gif" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; background: white;">
+                                        <p style="margin: 3px 0 0 0; font-size: 0.75rem; color: #6b7280;">Или укажите URL выше</p>
+                                    </div>
+                                    <textarea name="content_blocks-{{ loop.index0 }}-persons-{{ loop.index0 }}-bio" placeholder="Биография" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb; resize: vertical;" rows="3">{{ person.bio.data if person.bio.data else '' }}</textarea>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" onclick="addPerson({{ loop.index0 }})" class="btn btn-success btn-sm">Добавить карточку</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" onclick="addContentBlock()" class="btn btn-success" style="font-size: 16px;">➕ Добавить блок контента</button>
+        </div>
+
+        <!-- Загрузка файлов -->
+        <div class="file-upload-section">
+            <h2>📁 Загрузка файлов</h2>
+            <div class="form-group">
+                {{ form.new_documents.label(class="form-label") }}
+                {{ form.new_documents(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.new_photos.label(class="form-label") }}
+                {{ form.new_photos(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="submit-section">
+            {{ form.submit(class="btn btn-success", style="font-size: 16px; padding: 12px 30px;") }}
+            <button type="button" onclick="cleanHtmlData()" class="btn btn-warning" style="font-size: 16px; padding: 12px 30px; margin-left: 10px;">🧹 Очистить HTML-теги</button>
+        </div>
+    </form>
+</div>
+
+<script>
+let blockCount = {{ form.content_blocks.data | length if form.content_blocks.data else 0 }};
+
+function addContentBlock() {
+    const container = document.getElementById('content-blocks-container');
+    const blockDiv = document.createElement('div');
+    blockDiv.className = 'content-block';
+    blockDiv.style.cssText = 'border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #f9fafb;';
+    
+    blockDiv.innerHTML = `
+        <div class="content-block-header">
+            <h3 class="content-block-title">📦 Блок ${blockCount + 1}</h3>
+            <button type="button" onclick="removeContentBlock(this)" class="btn btn-danger btn-sm">🗑️ Удалить блок</button>
+        </div>
+        
+        <div class="block-type-selector">
+            <label class="form-label">Тип блока</label>
+            <select name="content_blocks-${blockCount}-block_type" class="form-control" onchange="toggleBlockContent(this)">
+                <option value="text">Текст</option>
+                <option value="table">Таблица</option>
+                <option value="list">Список</option>
+                <option value="documents">Документы</option>
+                <option value="photos">Фотографии</option>
+                <option value="person">Карточка человека</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Заголовок блока</label>
+            <input type="text" name="content_blocks-${blockCount}-title" class="form-control">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Содержимое</label>
+            <textarea name="content_blocks-${blockCount}-content" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="block-content" data-block-type="text">
+            <div class="table-content table-editor" style="display: none;">
+                <h4>Заголовки таблицы</h4>
+                <div id="table-headers-${blockCount}"></div>
+                <button type="button" onclick="addTableHeader(${blockCount})" class="btn btn-success btn-sm" style="margin-bottom: 15px;">➕ Добавить заголовок</button>
+                
+                <h4>Строки таблицы</h4>
+                <div id="table-rows-${blockCount}"></div>
+                <button type="button" onclick="addTableRow(${blockCount})" class="btn btn-success btn-sm" style="margin-bottom: 20px;">➕ Добавить строку</button>
+                
+                <!-- Предпросмотр таблицы -->
+                <div class="table-preview-section" style="margin-top: 25px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 2px solid #e2e8f0;">
+                    <h4 style="margin: 0 0 15px 0; color: #1e293b; font-size: 1.1rem;">👁️ Предпросмотр таблицы</h4>
+                    <div id="table-preview-${blockCount}" class="table-preview" style="overflow-x: auto; border: 1px solid #d1d5db; border-radius: 8px; background: white;">
+                        <table class="content-table" style="width: 100%; border-collapse: collapse; margin: 0;">
+                            <thead>
+                                <tr style="background: #f1f5f9;">
+                                    <th style="padding: 12px; border: 1px solid #d1d5db; text-align: left; font-weight: 600; color: #374151;">Заголовок 1</th>
+                                    <th style="padding: 12px; border: 1px solid #d1d5db; text-align: left; font-weight: 600; color: #374151;">Заголовок 2</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 12px; border: 1px solid #d1d5db; color: #6b7280;">Ячейка 1</td>
+                                    <td style="padding: 12px; border: 1px solid #d1d5db; color: #6b7280;">Ячейка 2</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px; border: 1px solid #d1d5db; color: #6b7280;">Ячейка 3</td>
+                                    <td style="padding: 12px; border: 1px solid #d1d5db; color: #6b7280;">Ячейка 4</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="margin: 10px 0 0 0; font-size: 0.9rem; color: #6b7280; text-align: center;">
+                        💡 Предпросмотр обновляется автоматически при изменении данных
+                    </p>
+                </div>
+            </div>
+            
+            <div class="list-content list-editor" style="display: none;">
+                <h4>Элементы списка</h4>
+                <div id="list-items-${blockCount}"></div>
+                <button type="button" onclick="addListItem(${blockCount})" class="btn btn-success btn-sm">➕ Добавить элемент</button>
+            </div>
+            
+            <div class="documents-content documents-editor" style="display: none;">
+                <h4>Документы</h4>
+                <div id="documents-${blockCount}"></div>
+                <button type="button" onclick="addDocument(${blockCount})" class="btn btn-success btn-sm">➕ Добавить документ</button>
+                
+                <!-- Загрузка документов -->
+                <div class="file-upload-section" style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <h5 style="margin: 0 0 10px 0; color: #374151; font-size: 0.9rem;">📁 Загрузить документы</h5>
+                    <input type="file" name="block_documents_${blockCount}" multiple accept=".pdf,.doc,.docx,.txt" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; background: white;">
+                    <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #6b7280;">Поддерживаемые форматы: PDF, DOC, DOCX, TXT</p>
+                </div>
+            </div>
+            
+            <div class="photos-content photos-editor" style="display: none;">
+                <h4>Фотографии</h4>
+                <div id="photos-${blockCount}"></div>
+                <button type="button" onclick="addPhoto(${blockCount})" class="btn btn-success btn-sm">➕ Добавить фотографию</button>
+                
+                <!-- Загрузка фотографий -->
+                <div class="file-upload-section" style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <h5 style="margin: 0 0 10px 0; color: #374151; font-size: 0.9rem;">📸 Загрузить фотографии</h5>
+                    <input type="file" name="block_photos_${blockCount}" multiple accept=".jpg,.jpeg,.png,.gif" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; background: white;">
+                    <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #6b7280;">Поддерживаемые форматы: JPG, JPEG, PNG, GIF</p>
+                </div>
+            </div>
+            
+            <div class="persons-content persons-editor" style="display: none;">
+                <h4>Карточки людей</h4>
+                <div id="persons-${blockCount}"></div>
+                <button type="button" onclick="addPerson(${blockCount})" class="btn btn-success btn-sm">➕ Добавить карточку</button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(blockDiv);
+    
+    // Добавляем обработчик события для нового селекта
+    const newSelect = blockDiv.querySelector('select[name*="block_type"]');
+    if (newSelect) {
+        newSelect.addEventListener('change', function() {
+            toggleBlockContent(this);
+        });
+        // Устанавливаем значение по умолчанию и показываем соответствующий контент
+        newSelect.value = 'text';
+        toggleBlockContent(newSelect);
+    }
+    
+    // Инициализируем предпросмотр для нового блока
+    updateTablePreview(blockCount);
+    
+    blockCount++;
+}
+
+function removeContentBlock(button) {
+    button.closest('.content-block').remove();
+}
+
+function toggleBlockContent(select) {
+    const blockContent = select.closest('.content-block').querySelector('.block-content');
+    const blockType = select.value;
+    
+    // Скрываем все типы контента
+    const contentTypes = ['.table-content', '.list-content', '.documents-content', '.photos-content', '.persons-content'];
+    contentTypes.forEach(selector => {
+        const elements = blockContent.querySelectorAll(selector);
+        elements.forEach(el => {
+            el.style.display = 'none';
+        });
+    });
+    
+    // Показываем нужный тип
+    let targetSelector = '';
+    if (blockType === 'table') {
+        targetSelector = '.table-content';
+    } else if (blockType === 'list') {
+        targetSelector = '.list-content';
+    } else if (blockType === 'documents') {
+        targetSelector = '.documents-content';
+    } else if (blockType === 'photos') {
+        targetSelector = '.photos-content';
+    } else if (blockType === 'person') {
+        targetSelector = '.persons-content';
+    }
+    
+    if (targetSelector) {
+        const targetElement = blockContent.querySelector(targetSelector);
+        if (targetElement) {
+            targetElement.style.display = 'block';
+        }
+    }
+    
+    // Обновляем data-block-type для отслеживания
+    if (blockContent) {
+        blockContent.setAttribute('data-block-type', blockType);
+    }
+}
+
+// Функции для работы с таблицами
+function addTableHeader(blockIndex) {
+    const container = document.getElementById(`table-headers-${blockIndex}`);
+    const headerIndex = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+        <input type="text" name="content_blocks-${blockIndex}-table_headers-${headerIndex}" placeholder="Заголовок столбца" class="form-control" oninput="updateTablePreview(${blockIndex})">
+        <button type="button" onclick="removeTableHeader(this)" class="btn btn-danger btn-sm">🗑️</button>
+    `;
+    container.appendChild(div);
+    
+    // Добавляем ячейку в каждую существующую строку
+    const rowsContainer = document.getElementById(`table-rows-${blockIndex}`);
+    if (rowsContainer) {
+        rowsContainer.querySelectorAll('.item-row').forEach(row => {
+            const cellsContainer = row.querySelector('div[style*="flex: 1"]');
+            if (cellsContainer) {
+                const cellIndex = cellsContainer.children.length;
+                const newCell = document.createElement('input');
+                newCell.type = 'text';
+                newCell.name = `content_blocks-${blockIndex}-table_rows-${Array.from(rowsContainer.children).indexOf(row)}-cells-${cellIndex}`;
+                newCell.placeholder = `Ячейка ${cellIndex + 1}`;
+                newCell.className = 'form-control';
+                newCell.oninput = () => updateTablePreview(blockIndex);
+                cellsContainer.appendChild(newCell);
+            }
+        });
+    }
+    
+    updateTablePreview(blockIndex);
+}
+
+function removeTableHeader(button) {
+    const headerRow = button.parentElement;
+    const headerIndex = Array.from(headerRow.parentElement.children).indexOf(headerRow);
+    
+    // Удаляем заголовок
+    headerRow.remove();
+    
+    // Удаляем соответствующую ячейку из каждой строки
+    const blockIndex = getBlockIndexFromElement(button);
+    if (blockIndex !== -1) {
+        const rowsContainer = document.getElementById(`table-rows-${blockIndex}`);
+        if (rowsContainer) {
+            rowsContainer.querySelectorAll('.item-row').forEach(row => {
+                const cellsContainer = row.querySelector('div[style*="flex: 1"]');
+                if (cellsContainer && cellsContainer.children[headerIndex]) {
+                    cellsContainer.children[headerIndex].remove();
+                }
+            });
+        }
+        updateTablePreview(blockIndex);
+    }
+}
+
+function addTableRow(blockIndex) {
+    const container = document.getElementById(`table-rows-${blockIndex}`);
+    const rowIndex = container.children.length;
+    
+    // Получаем количество заголовков для определения количества ячеек
+    const headersContainer = document.getElementById(`table-headers-${blockIndex}`);
+    const headerCount = headersContainer ? headersContainer.children.length : 1;
+    
+    // Создаем ячейки для каждой колонки
+    let cellsHtml = '';
+    for (let i = 0; i < headerCount; i++) {
+        cellsHtml += `<input type="text" name="content_blocks-${blockIndex}-table_rows-${rowIndex}-cells-${i}" placeholder="Ячейка ${i + 1}" class="form-control" oninput="updateTablePreview(${blockIndex})">`;
+    }
+    
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+        <div style="flex: 1; display: flex; gap: 5px;">
+            ${cellsHtml}
+        </div>
+        <button type="button" onclick="removeTableRow(this)" class="btn btn-danger btn-sm">🗑️</button>
+    `;
+    container.appendChild(div);
+    updateTablePreview(blockIndex);
+}
+
+function removeTableRow(button) {
+    button.parentElement.remove();
+    // Обновляем предпросмотр после удаления
+    const blockIndex = getBlockIndexFromElement(button);
+    if (blockIndex !== -1) {
+        updateTablePreview(blockIndex);
+    }
+}
+
+// Функции для работы со списками
+function addListItem(blockIndex) {
+    const container = document.getElementById(`list-items-${blockIndex}`);
+    const itemIndex = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+        <input type="text" name="content_blocks-${blockIndex}-list_items-${itemIndex}" placeholder="Элемент списка" class="form-control">
+        <button type="button" onclick="removeListItem(this)" class="btn btn-danger btn-sm">🗑️</button>
+    `;
+    container.appendChild(div);
+}
+
+function removeListItem(button) {
+    button.parentElement.remove();
+}
+
+// Функции для работы с документами
+function addDocument(blockIndex) {
+    const container = document.getElementById(`documents-${blockIndex}`);
+    const docIndex = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+        <input type="text" name="content_blocks-${blockIndex}-documents-${docIndex}-name" placeholder="Название документа" class="form-control">
+        <input type="text" name="content_blocks-${blockIndex}-documents-${docIndex}-url" placeholder="URL документа" class="form-control">
+        <button type="button" onclick="removeDocument(this)" class="btn btn-danger btn-sm">🗑️</button>
+    `;
+    container.appendChild(div);
+}
+
+function removeDocument(button) {
+    button.parentElement.remove();
+}
+
+// Функции для работы с фотографиями
+function addPhoto(blockIndex) {
+    const container = document.getElementById(`photos-${blockIndex}`);
+    const photoIndex = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+        <input type="text" name="content_blocks-${blockIndex}-photos-${photoIndex}-url" placeholder="URL фотографии" class="form-control">
+        <input type="text" name="content_blocks-${blockIndex}-photos-${photoIndex}-alt" placeholder="Описание фотографии" class="form-control">
+        <button type="button" onclick="removePhoto(this)" class="btn btn-danger btn-sm">🗑️</button>
+    `;
+    container.appendChild(div);
+}
+
+function removePhoto(button) {
+    button.parentElement.remove();
+}
+
+// Функции для работы с карточками людей
+function addPerson(blockIndex) {
+    const container = document.getElementById(`persons-${blockIndex}`);
+    const personIndex = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'person-card';
+    div.innerHTML = `
+        <div class="person-card-header">
+            <h5 class="person-card-title">Карточка ${container.children.length + 1}</h5>
+            <button type="button" onclick="removePerson(this)" class="btn btn-danger btn-xs">🗑️</button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <input type="text" name="content_blocks-${blockIndex}-persons-${personIndex}-name" placeholder="ФИО" class="form-control">
+            <input type="text" name="content_blocks-${blockIndex}-persons-${personIndex}-position" placeholder="Должность" class="form-control">
+            <input type="text" name="content_blocks-${blockIndex}-persons-${personIndex}-photo" placeholder="URL фотографии" class="form-control">
+            <input type="text" name="content_blocks-${blockIndex}-persons-${personIndex}-email" placeholder="Email" class="form-control">
+            <input type="text" name="content_blocks-${blockIndex}-persons-${personIndex}-phone" placeholder="Телефон" class="form-control">
+            <input type="text" name="content_blocks-${blockIndex}-persons-${personIndex}-education" placeholder="Образование" class="form-control">
+            <input type="text" name="content_blocks-${blockIndex}-persons-${personIndex}-experience" placeholder="Опыт работы" class="form-control">
+        </div>
+        <!-- Загрузка фотографии для карточки -->
+        <div style="margin-bottom: 10px; padding: 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; color: #374151; font-weight: 500;">📸 Фотография:</label>
+            <input type="file" name="person_photo_file_${blockIndex}_${personIndex}" accept=".jpg,.jpeg,.png,.gif" style="width: 100%; padding: 6px; border: 1px solid #d1d5db; border-radius: 4px; background: white;">
+            <p style="margin: 3px 0 0 0; font-size: 0.75rem; color: #6b7280;">Или укажите URL выше</p>
+        </div>
+        <textarea name="content_blocks-${blockIndex}-persons-${personIndex}-bio" placeholder="Биография" class="form-control" rows="3"></textarea>
+    `;
+    container.appendChild(div);
+}
+
+function removePerson(button) {
+    button.closest('div').remove();
+}
+
+// Функция для получения индекса блока из элемента
+function getBlockIndexFromElement(element) {
+    const contentBlock = element.closest('.content-block');
+    if (!contentBlock) return -1;
+    
+    // Ищем индекс в ID элементов
+    const headersContainer = contentBlock.querySelector('[id^="table-headers-"]');
+    if (headersContainer) {
+        const id = headersContainer.id;
+        const match = id.match(/table-headers-(\d+)/);
+        if (match) return parseInt(match[1]);
+    }
+    
+    const rowsContainer = contentBlock.querySelector('[id^="table-rows-"]');
+    if (rowsContainer) {
+        const id = rowsContainer.id;
+        const match = id.match(/table-rows-(\d+)/);
+        if (match) return parseInt(match[1]);
+    }
+    
+    return -1;
+}
+
+// Функция для обновления предпросмотра таблицы
+function updateTablePreview(blockIndex) {
+    const previewContainer = document.getElementById(`table-preview-${blockIndex}`);
+    if (!previewContainer) return;
+    
+    // Получаем заголовки
+    const headersContainer = document.getElementById(`table-headers-${blockIndex}`);
+    const headerInputs = headersContainer ? headersContainer.querySelectorAll('input[type="text"]') : [];
+    const headers = Array.from(headerInputs).map(input => input.value || 'Заголовок');
+    
+    // Получаем строки
+    const rowsContainer = document.getElementById(`table-rows-${blockIndex}`);
+    const rowInputs = rowsContainer ? rowsContainer.querySelectorAll('input[type="text"]') : [];
+    const rows = [];
+    
+    // Группируем ячейки по строкам (предполагаем, что в каждой строке одинаковое количество ячеек)
+    if (rowInputs.length > 0) {
+        const cellsPerRow = headers.length || 1;
+        for (let i = 0; i < rowInputs.length; i += cellsPerRow) {
+            const row = [];
+            for (let j = 0; j < cellsPerRow; j++) {
+                const input = rowInputs[i + j];
+                row.push(input ? (input.value || `Ячейка ${j + 1}`) : `Ячейка ${j + 1}`);
+            }
+            rows.push(row);
+        }
+    }
+    
+    // Если нет данных, показываем пример
+    if (headers.length === 0 && rows.length === 0) {
+        headers.push('Заголовок 1', 'Заголовок 2');
+        rows.push(['Ячейка 1', 'Ячейка 2']);
+    }
+    
+    // Создаем HTML таблицы
+    let tableHTML = '<table class="content-table" style="width: 100%; border-collapse: collapse; margin: 0;">';
+    
+    // Заголовки
+    if (headers.length > 0) {
+        tableHTML += '<thead><tr style="background: #f1f5f9;">';
+        headers.forEach(header => {
+            tableHTML += `<th style="padding: 12px; border: 1px solid #d1d5db; text-align: left; font-weight: 600; color: #374151;">${header}</th>`;
+        });
+        tableHTML += '</tr></thead>';
+    }
+    
+    // Строки
+    if (rows.length > 0) {
+        tableHTML += '<tbody>';
+        rows.forEach(row => {
+            tableHTML += '<tr>';
+            row.forEach(cell => {
+                tableHTML += `<td style="padding: 12px; border: 1px solid #d1d5db; color: #6b7280;">${cell}</td>`;
+            });
+            tableHTML += '</tr>';
+        });
+        tableHTML += '</tbody>';
+    }
+    
+    tableHTML += '</table>';
+    
+    // Обновляем предпросмотр
+    previewContainer.innerHTML = tableHTML;
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Настраиваем видимость блоков контента для существующих блоков
+    document.querySelectorAll('.content-block').forEach(block => {
+        const select = block.querySelector('select[name*="block_type"]');
+        if (select) {
+            // Устанавливаем правильное значение по умолчанию если не выбрано
+            if (!select.value) {
+                select.value = 'text';
+            }
+            toggleBlockContent(select);
+        }
+    });
+    
+    // Добавляем обработчики событий для всех селектов типов блоков
+    document.querySelectorAll('select[name*="block_type"]').forEach(select => {
+        select.addEventListener('change', function() {
+            console.log('DEBUG: Изменен тип блока на:', this.value, 'для поля:', this.name);
+            toggleBlockContent(this);
+        });
+        
+        // Инициализируем тип блока при загрузке
+        console.log('DEBUG: Инициализация типа блока:', select.value, 'для поля:', select.name);
+        toggleBlockContent(select);
+    });
+    
+    // Инициализируем предпросмотры для всех таблиц
+    document.querySelectorAll('[id^="table-preview-"]').forEach(preview => {
+        const match = preview.id.match(/table-preview-(\d+)/);
+        if (match) {
+            updateTablePreview(parseInt(match[1]));
+        }
+    });
+    
+    // Добавляем отладочную информацию при отправке формы
+    document.querySelector('form').addEventListener('submit', function(e) {
+        console.log('DEBUG: Отправка формы');
+        const blockTypes = document.querySelectorAll('select[name*="block_type"]');
+        blockTypes.forEach((select, index) => {
+            console.log(`DEBUG: Блок ${index}: тип = ${select.value}, имя поля = ${select.name}`);
+        });
+    });
+});
+
+// Функция для очистки HTML-тегов
+function cleanHtmlData() {
+    if (confirm('Вы уверены, что хотите очистить HTML-теги из всех данных? Это действие нельзя отменить.')) {
+        // Создаем форму для отправки POST-запроса
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/info/clean_html_data';
+        
+        // Добавляем CSRF токен
+        const csrfToken = document.querySelector('input[name="csrf_token"]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken.value;
+            form.appendChild(csrfInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+});
+</script>
+
+<!-- Стили уже включены в base.html -->
+{% endblock %}

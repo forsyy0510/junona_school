@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% block title %}Редактирование проектов — Юнона{% endblock %}
+{% block content %}
+<style>
+.edit-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.edit-form {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.project-item {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.project-item h3 {
+    margin-top: 0;
+    color: #1e293b;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.btn-remove {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-add {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+.btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+</style>
+
+<div class="edit-container">
+    <div class="edit-header">
+        <h1>✏️ Редактирование проектов</h1>
+        <a href="/projects" class="btn-cancel">← Назад</a>
+    </div>
+
+    <form class="edit-form" id="editForm" method="POST">
+        <div id="projects-list">
+            {% for project in page_content.get('projects', []) %}
+            <div class="project-item" data-index="{{ loop.index0 }}">
+                <h3>Проект {{ loop.index }}</h3>
+                <div class="form-group">
+                    <label>Название:</label>
+                    <input type="text" name="projects[{{ loop.index0 }}][title]" value="{{ project.get('title', '') }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Описание:</label>
+                    <textarea name="projects[{{ loop.index0 }}][description]">{{ project.get('description', '') }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Статус:</label>
+                    <input type="text" name="projects[{{ loop.index0 }}][status]" value="{{ project.get('status', '') }}" required>
+                </div>
+                <input type="hidden" name="projects[{{ loop.index0 }}][id]" value="{{ project.get('id', loop.index0 + 1) }}">
+                <button type="button" class="btn-remove" onclick="removeProject(this)">Удалить проект</button>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn-add" onclick="addProject()">+ Добавить проект</button>
+
+        <div class="btn-group">
+            <button type="submit" class="btn-save">💾 Сохранить</button>
+            <a href="/projects" class="btn-cancel">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+let projectIndex = {{ page_content.get('projects', [])|length }};
+
+function addProject() {
+    const container = document.getElementById('projects-list');
+    const div = document.createElement('div');
+    div.className = 'project-item';
+    div.setAttribute('data-index', projectIndex);
+    div.innerHTML = `
+        <h3>Проект ${projectIndex + 1}</h3>
+        <div class="form-group">
+            <label>Название:</label>
+            <input type="text" name="projects[${projectIndex}][title]" required>
+        </div>
+        <div class="form-group">
+            <label>Описание:</label>
+            <textarea name="projects[${projectIndex}][description]"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Статус:</label>
+            <input type="text" name="projects[${projectIndex}][status]" required>
+        </div>
+        <input type="hidden" name="projects[${projectIndex}][id]" value="${projectIndex + 1}">
+        <button type="button" class="btn-remove" onclick="removeProject(this)">Удалить проект</button>
+    `;
+    container.appendChild(div);
+    projectIndex++;
+}
+
+function removeProject(btn) {
+    btn.closest('.project-item').remove();
+}
+
+document.getElementById('editForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const projectData = {};
+    
+    // Собираем данные проектов
+    for (let [key, value] of formData.entries()) {
+        const match = key.match(/projects\[(\d+)\]\[(\w+)\]/);
+        if (match) {
+            const index = parseInt(match[1]);
+            const field = match[2];
+            if (!projectData[index]) projectData[index] = {};
+            projectData[index][field] = value;
+        }
+    }
+    
+    // Преобразуем объект в массив
+    const projects = Object.keys(projectData)
+        .sort((a, b) => parseInt(a) - parseInt(b))
+        .map(key => projectData[key]);
+    
+    try {
+        const response = await fetch('/edit/projects', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ projects })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert('Проекты успешно сохранены!');
+            window.location.href = '/projects';
+        } else {
+            alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+        }
+    } catch (error) {
+        alert('Ошибка при сохранении: ' + error.message);
+    }
+});
+</script>
+{% endblock %}
+

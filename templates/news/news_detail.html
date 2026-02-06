@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} — Юнона{% endblock %}
+{% block meta_description %}{{ (item.content|striptags|truncate(160)) or item.title }} — МБОУ ИТ Гимназия Юнона{% endblock %}
+{% block og_title %}{{ item.title }}{% endblock %}
+{% block og_description %}{{ (item.content|striptags|truncate(200)) or item.title }}{% endblock %}
+{% block og_image %}{% if item.files %}{% set image_files = item.files | selectattr('kind', 'equalto', 'image') | list %}{% if image_files %}{{ request.url_root[:-1] }}{{ image_files[0].filename | news_file_url(item.id) }}{% endif %}{% endif %}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block content %}
+<div class="card item" style="border: none !important; outline: none !important; box-shadow: none !important;">
+    <h1>{{ item.title }}</h1>
+    <div class="date">{{ (item.publication_date or item.created_at).strftime('%d.%m.%Y') }} {% if item.is_featured %}· Главная{% endif %}</div>
+        {% if current_user.is_authenticated %}
+        <p>
+            <a class="btn" href="/news/{{ item.id }}/edit">Редактировать</a>
+            <form method="post" action="/news/{{ item.id }}/delete" style="display:inline-block;margin-left:8px;">
+            <button class="btn" type="submit" onclick="return confirm('Удалить новость?')">Удалить</button>
+            </form>
+        </p>
+        {% endif %}
+    
+    {% if item.files %}
+        {% set image_files = item.files | selectattr('kind', 'equalto', 'image') | list %}
+        {% if image_files %}
+        <div class="news-detail-gallery" style="margin: 20px 0;">
+            <div class="news-detail-gallery-row" style="display: flex; gap: 12px; overflow-x: auto; padding: 8px 0 12px 0; scroll-behavior: smooth; scrollbar-width: thin;">
+                {% for img in image_files %}
+                <div class="news-detail-gallery-item" style="flex: 0 0 200px; min-width: 200px;">
+                    <img class="js-previewable" src="{{ img.filename | news_file_url(item.id) }}" data-full="{{ img.filename | news_file_url(item.id) }}" alt="{{ item.title }}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 12px; cursor: pointer; display: block; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,0.2)'" onmouseout="this.style.boxShadow='none'">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+    
+    <div class="content">{{ item.content|safe }}</div>
+    
+    {% if doc_files %}
+        <div class="files">
+            <h3>Файлы:</h3>
+            <ul>
+            {% for doc in doc_files %}
+                <li><a href="{{ doc.url }}" target="_blank" download>{{ doc.filename }}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %} 

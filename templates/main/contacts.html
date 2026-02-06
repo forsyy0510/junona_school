@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Контакты — Юнона{% endblock %}
+{% block meta_description %}Контактная информация МБОУ ИТ Гимназия Юнона: адрес, телефон, электронная почта, время работы. Свяжитесь с нами!{% endblock %}
+{% block meta_keywords %}контакты школы Юнона, адрес гимназии, телефон школы, электронная почта, Волгодонск{% endblock %}
+{% block content %}
+{% if current_user.is_authenticated %}
+<div style="text-align: right; margin-bottom: 16px;">
+    <a href="/edit/contacts" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+        ✏️ Редактировать
+    </a>
+</div>
+{% endif %}
+<h1>Контакты</h1>
+<div class="card item" style="max-width: 500px; margin: 0 auto;">
+    <b>Адрес:</b> {{ (page_content|default({})).get('address', '347389, Ростовская обл, Волгодонск, ул. К.Маркса, 64А') }}<br>
+    <b>Телефон:</b> <a href="tel:{{ (page_content|default({})).get('phone', '+78639279776') }}">{{ (page_content|default({})).get('phone', '8 (8639) 27-97-76') }}</a><br>
+    <b>E-mail:</b> <a href="mailto:{{ (page_content|default({})).get('email', 'junona@rostovschool.ru') }}">{{ (page_content|default({})).get('email', 'junona@rostovschool.ru') }}</a><br>
+    <b>Время работы:</b> {{ (page_content|default({})).get('work_hours', 'Пн-Пт 8:00–17:00') }}<br>
+</div>
+<div style="margin: 32px 0; text-align:center;">
+    <iframe src="https://yandex.ru/map-widget/v1/?um=constructor%3A1b7e2e2e2e2e2e2e2e2e2e2e2e2e2e2e&amp;source=constructor" width="420" height="280" frameborder="0" style="border-radius:12px;"></iframe>
+</div>
+<div class="card item" style="max-width: 500px; margin: 0 auto;">
+    <h3>Форма обратной связи</h3>
+    <form>
+        <input type="text" placeholder="Ваше имя" style="width:100%;margin-bottom:10px;padding:8px;">
+        <input type="email" placeholder="E-mail" style="width:100%;margin-bottom:10px;padding:8px;">
+        <textarea placeholder="Сообщение" style="width:100%;margin-bottom:10px;padding:8px;"></textarea>
+        <button class="btn" type="submit">Отправить</button>
+    </form>
+</div>
+{% endblock %} 
